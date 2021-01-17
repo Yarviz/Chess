@@ -17,23 +17,29 @@ public class Pawn extends Piece {
     }
 
     @Override
-    public void lookMoves(Board.BoardTable[][] board, int x, int y) {
+    public boolean lookMoves(Board.BoardTable[][] board, int x, int y) {
         int y_add = 1;
         int y_line = 1;
         int piece_col = board[x][y].piece_color;
+        boolean checkmate = false;
 
         if (piece_col == BLACK) {
             y_add = -1;
             y_line = 6;
         }
 
-        if (!checkXY(x, y + y_add)) return;
+        if (!checkXY(x, y + y_add)) return false;
         if (board[x][y + y_add].piece == NONE) board[x][y + y_add].square_check = 2;
 
         if (checkXY(x - 1, y + y_add)) {
             if ((board[x - 1][y + y_add].piece_color != piece_col && board[x - 1][y + y_add].piece > NONE)
                  || board[x - 1][y + y_add].square_pawn) {
                 board[x - 1][y + y_add].square_check = 2;
+
+                if (board[x - 1][y + y_add].piece == KING) {
+                    board[x][y].square_checkmate = true;
+                    checkmate = true;
+                }
             }
         }
 
@@ -41,13 +47,26 @@ public class Pawn extends Piece {
             if ((board[x + 1][y + y_add].piece_color != piece_col && board[x + 1][y + y_add].piece > NONE)
                  || board[x + 1][y + y_add].square_pawn) {
                 board[x + 1][y + y_add].square_check = 2;
+
+                if (board[x - 1][y + y_add].piece == KING) {
+                    board[x][y].square_checkmate = true;
+                    checkmate = true;
+                }
             }
         }
 
         if (y == y_line) {
             if (board[x][y + (y_add << 1)].piece == NONE && board[x][y + y_add].piece == NONE) {
                 board[x][y + (y_add << 1)].square_check = 3;
+
+                if (board[x][y + (y_add << 1)].piece == KING) {
+                    board[x][y].square_checkmate = true;
+                    board[x][y + y_add].square_checkmate = true;
+                    checkmate = true;
+                }
             }
         }
+
+        return checkmate;
     }
 }

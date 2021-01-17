@@ -17,12 +17,13 @@ public class Queen extends Piece {
     }
 
     @Override
-    public void lookMoves(Board.BoardTable[][] board, int x, int y) {
+    public boolean lookMoves(Board.BoardTable[][] board, int x, int y) {
         int piece_col = board[x][y].piece_color;
         int[][] xy_add = {{ -1, -1}, { 0, -1}, {  1,  -1}, {  1,  0},
                           {  1,  1}, { 0,  1}, { -1,   1}, { -1,  0}};
         int xx = x;
         int yy = y;
+        boolean checkmate = false;
 
         for (int i = 0; i < 8; i++) {
             xx += xy_add[i][0];
@@ -37,6 +38,19 @@ public class Queen extends Piece {
                 }
                 else if (board[xx][yy].piece_color != piece_col) {
                     board[xx][yy].square_check = 2;
+
+                    if (board[xx][yy].piece == KING) {
+                        int xx2 = xx;
+                        int yy2 = yy;
+
+                        while(xx2 != x || yy2 != y) {
+                            xx2 -= xy_add[i][0];
+                            yy2 -= xy_add[i][1];
+                            board[xx2][yy2].square_checkmate = true;
+                        }
+                        checkmate = true;
+                    }
+
                     break;
                 }
                 else break;
@@ -45,5 +59,7 @@ public class Queen extends Piece {
             xx = x;
             yy = y;
         }
+
+        return checkmate;
     }
 }

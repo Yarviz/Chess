@@ -22,6 +22,7 @@ public class Board extends VBox {
 
     public static class BoardTable {
         public boolean square_pawn;
+        public boolean square_checkmate;
         public int square_check;
         public int square_color;
         public int piece;
@@ -29,6 +30,7 @@ public class Board extends VBox {
 
         BoardTable() {
             this.square_pawn = false;
+            this.square_checkmate = false;
             this.square_check = 0;
             this.square_color = 0;
             this.piece_color = -1;
@@ -120,6 +122,15 @@ public class Board extends VBox {
         }
     }
 
+    protected void clearBoardCheckMate() {
+        for (int y = 0; y < 8; y++)
+        {
+            for (int x = 0; x < 8; x++) {
+                board_table[x][y].square_checkmate = false;
+            }
+        }
+    }
+
     protected void drawBoard() {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
@@ -152,6 +163,11 @@ public class Board extends VBox {
 
                 if (board_table[x][y].square_check > 1) {
                     gc.setFill(Color.GREEN);
+                    gc.fillOval(xx + SQ_SIZE / 3, yy + SQ_SIZE / 3, SQ_SIZE / 3, SQ_SIZE / 3);
+                }
+
+                if (board_table[x][y].square_checkmate) {
+                    gc.setFill(Color.BLUE);
                     gc.fillOval(xx + SQ_SIZE / 3, yy + SQ_SIZE / 3, SQ_SIZE / 3, SQ_SIZE / 3);
                 }
 

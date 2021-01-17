@@ -70,6 +70,9 @@ public class GameLogic extends Board{
 
             if (lookCheck(board_table[x][y].piece_color)) {
                 System.out.println("Check");
+                if (lookMate(board_table[x][y].piece_color)) {
+                    System.out.println("Checkmate!!");
+                }
             }
 
             clearBoard();
@@ -86,25 +89,18 @@ public class GameLogic extends Board{
 
     private boolean lookCheck(int col) {
 
+        clearBoardCheckMate();
+        boolean check = false;
+
         for (int yy = 0; yy < 8; yy++) {
             for (int xx = 0; xx < 8; xx++) {
                 if (board_table[xx][yy].piece_color == col) {
-                    piece[board_table[xx][yy].piece].lookMoves(board_table, xx, yy);
+                    if (piece[board_table[xx][yy].piece].lookMoves(board_table, xx, yy)) check = true;
                 }
             }
         }
 
-        for (int yy = 0; yy < 8; yy++) {
-            for (int xx = 0; xx < 8; xx++) {
-                if (board_table[xx][yy].piece == KING) {
-                    if (board_table[xx][yy].piece_color == ((col + 1) % 2) && board_table[xx][yy].square_check > 1) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
+        return check;
     }
 
     private boolean lookMate(int col) {
@@ -112,21 +108,38 @@ public class GameLogic extends Board{
         for (int yy = 0; yy < 8; yy++) {
             for (int xx = 0; xx < 8; xx++) {
                 if (board_table[xx][yy].piece_color == col) {
-                    piece[board_table[xx][yy].piece].lookMoves(board_table, xx, yy);
+                    clearBoard();
+                    if (escapeCheck(xx, yy)) return false;
                 }
             }
         }
 
-        for (int yy = 0; yy < 8; yy++) {
-            for (int xx = 0; xx < 8; xx++) {
-                if (board_table[xx][yy].piece == KING) {
-                    if (board_table[xx][yy].piece_color == ((col + 1) % 2) && board_table[xx][yy].square_check > 1) {
-                        return true;
+        return true;
+    }
+
+    private boolean escapeCheck(int x, int y) {
+        int cur_piece = board_table[x][y].piece;
+        int cur_color = board_table[x][y].piece_color;
+        boolean escape = false;
+
+        board_table[x][y].piece = NONE;
+        board_table[x][y].piece_color = NONE;
+
+        if (cur_piece == KING) {
+            for (int yy = y - 1; yy <= y + 1; yy++) {
+                for (int xx = x - 1; xx <= x + 1; xx++) {
+                    if (xx >= 0 && xx < 8 && yy >= 0 && y < 8) {
+                        board_table[xx][yy].piece = cur_piece;
+                        board_table[xx][yy].piece_color = cur_color;
+                        if (!lookCheck(cur_color ^ 1)) escape = true;
                     }
                 }
             }
         }
 
-        return false;
+        board_table[x][y].piece = cur_piece;
+        board_table[x][y].piece_color = cur_color;
+
+        return escape;
     }
 }

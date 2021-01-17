@@ -20,5 +20,5 @@ public abstract class Piece {
     }
 
     public abstract void draw(GraphicsContext gc, int x, int y, int type);
-    public abstract void lookMoves(Board.BoardTable[][] board, int x, int y);
+    public abstract boolean lookMoves(Board.BoardTable[][] board, int x, int y);
 }
