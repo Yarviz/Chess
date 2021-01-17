@@ -2,10 +2,8 @@ package Game;
 
 import static Game.Piece.*;
 
-import javafx.event.EventHandler;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -82,9 +80,9 @@ public class Board extends VBox {
         }
 
         int[] white_pcs = {ROCK, KNIGHT, BISHOP, KING, QUEEN, BISHOP, KNIGHT, ROCK,
-                           PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN};
+                           PAWN, PAWN  , PAWN  , PAWN , PAWN, PAWN  , PAWN  , PAWN};
 
-        int[] black_pcs = {PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN,
+        int[] black_pcs = {PAWN, PAWN  , PAWN  , PAWN , PAWN, PAWN  , PAWN  , PAWN,
                            ROCK, KNIGHT, BISHOP, QUEEN, KING, BISHOP, KNIGHT, ROCK};
 
         int x = 0;

@@ -1,11 +1,9 @@
 package Game;
 
-import javafx.event.EventHandler;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.input.MouseEvent;
+import static Game.Piece.*;
 
-import static Game.Piece.NONE;
-import static Game.Piece.PAWN;
+import javafx.event.EventHandler;
+import javafx.scene.input.MouseEvent;
 
 public class GameLogic extends Board{
 
@@ -28,6 +26,17 @@ public class GameLogic extends Board{
 
     public void drawCanvas() {
         drawBoard();
+    }
+
+    public void mouseClick(int mx, int my) {
+
+        if (mx > SQ_PAD && mx < SQ_PAD + 8 * SQ_SIZE && my > SQ_PAD && my < SQ_PAD + 8 * SQ_SIZE) {
+            mx = (mx - SQ_PAD) / SQ_SIZE;
+            my = (my - SQ_PAD) / SQ_SIZE;
+
+            setXY(mx, my);
+            drawBoard();
+        }
     }
 
     private void setXY(int x, int y) {
@@ -59,6 +68,10 @@ public class GameLogic extends Board{
             }
             else clearBoardPawn();
 
+            if (lookCheck(board_table[x][y].piece_color)) {
+                System.out.println("Check");
+            }
+
             clearBoard();
             this.state = false;
         }
@@ -71,14 +84,49 @@ public class GameLogic extends Board{
         }
     }
 
-    public void mouseClick(int mx, int my) {
+    private boolean lookCheck(int col) {
 
-        if (mx > SQ_PAD && mx < SQ_PAD + 8 * SQ_SIZE && my > SQ_PAD && my < SQ_PAD + 8 * SQ_SIZE) {
-            mx = (mx - SQ_PAD) / SQ_SIZE;
-            my = (my - SQ_PAD) / SQ_SIZE;
-
-            setXY(mx, my);
-            drawBoard();
+        for (int yy = 0; yy < 8; yy++) {
+            for (int xx = 0; xx < 8; xx++) {
+                if (board_table[xx][yy].piece_color == col) {
+                    piece[board_table[xx][yy].piece].lookMoves(board_table, xx, yy);
+                }
+            }
         }
+
+        for (int yy = 0; yy < 8; yy++) {
+            for (int xx = 0; xx < 8; xx++) {
+                if (board_table[xx][yy].piece == KING) {
+                    if (board_table[xx][yy].piece_color == ((col + 1) % 2) && board_table[xx][yy].square_check > 1) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean lookMate(int col) {
+
+        for (int yy = 0; yy < 8; yy++) {
+            for (int xx = 0; xx < 8; xx++) {
+                if (board_table[xx][yy].piece_color == col) {
+                    piece[board_table[xx][yy].piece].lookMoves(board_table, xx, yy);
+                }
+            }
+        }
+
+        for (int yy = 0; yy < 8; yy++) {
+            for (int xx = 0; xx < 8; xx++) {
+                if (board_table[xx][yy].piece == KING) {
+                    if (board_table[xx][yy].piece_color == ((col + 1) % 2) && board_table[xx][yy].square_check > 1) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 }
