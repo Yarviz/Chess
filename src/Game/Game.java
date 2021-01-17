@@ -11,8 +11,8 @@ public class Game extends Application {
     public void start(Stage primaryStage) {
 
         BorderPane mainPane = new BorderPane();
-        Board board = new Board();
-        mainPane.setCenter(board);
+        GameLogic logic = new GameLogic();
+        mainPane.setCenter(logic);
 
         Scene game_scene = new Scene(mainPane,Board.SQ_SIZE * 12,Board.SQ_SIZE * 9);
 
@@ -21,7 +21,7 @@ public class Game extends Application {
         primaryStage.setResizable(false);
         primaryStage.show();
 
-        board.draw();
+        logic.drawCanvas();
     }
 
     public static void main(String[] args) {

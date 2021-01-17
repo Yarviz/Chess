@@ -31,20 +31,22 @@ public class Pawn extends Piece {
         if (board[x][y + y_add].piece == NONE) board[x][y + y_add].square_check = 2;
 
         if (checkXY(x - 1, y + y_add)) {
-            if (board[x - 1][y + y_add].piece_color != piece_col && board[x - 1][y + y_add].piece > NONE) {
+            if ((board[x - 1][y + y_add].piece_color != piece_col && board[x - 1][y + y_add].piece > NONE)
+                 || board[x - 1][y + y_add].square_pawn) {
                 board[x - 1][y + y_add].square_check = 2;
             }
         }
 
         if (checkXY(x + 1, y + y_add)) {
-            if (board[x + 1][y + y_add].piece_color != piece_col && board[x + 1][y + y_add].piece > NONE) {
+            if ((board[x + 1][y + y_add].piece_color != piece_col && board[x + 1][y + y_add].piece > NONE)
+                 || board[x + 1][y + y_add].square_pawn) {
                 board[x + 1][y + y_add].square_check = 2;
             }
         }
 
         if (y == y_line) {
             if (board[x][y + (y_add << 1)].piece == NONE && board[x][y + y_add].piece == NONE) {
-                board[x][y + (y_add << 1)].square_check = 2;
+                board[x][y + (y_add << 1)].square_check = 3;
             }
         }
     }

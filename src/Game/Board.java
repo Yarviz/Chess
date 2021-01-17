@@ -12,74 +12,29 @@ import javafx.scene.text.Font;
 
 
 public class Board extends VBox {
-    private Canvas canvas;
-    private GraphicsContext gc;
+    protected Canvas canvas;
+    protected GraphicsContext gc;
 
     static final int SQ_SIZE = 64;
     static final int SQ_PAD = SQ_SIZE / 2;
     static final int DIF_PIECES = 6;
 
-    private BoardTable[][] board_table;
-    private final Select select;
-    private final Piece[] piece = new Piece[DIF_PIECES];
+    protected BoardTable[][] board_table;
+    protected final Piece[] piece = new Piece[DIF_PIECES];
 
     public static class BoardTable {
+        public boolean square_pawn;
         public int square_check;
         public int square_color;
         public int piece;
         public int piece_color;
 
         BoardTable() {
+            this.square_pawn = false;
             this.square_check = 0;
             this.square_color = 0;
             this.piece_color = -1;
             this.piece = -1;
-        }
-    }
-
-    private class Select {
-        private int x, y;
-        private boolean state;
-
-        Select() {
-            this.x = 0;
-            this.y = 0;
-            this.state = false;
-        }
-
-        public int getX() {return x;}
-        public int getY() {return y;}
-        public boolean isState() {return state;}
-
-        public void setXY(int x, int y) {
-            if (!state && board_table[x][y].piece == -1) return;
-
-            if (board_table[x][y].square_check != 2 && state) {
-                clearBoard();
-                setState(false);
-            }
-            else if (state) {
-
-                board_table[x][y].piece = board_table[this.x][this.y].piece;
-                board_table[x][y].piece_color = board_table[this.x][this.y].piece_color;
-                board_table[this.x][this.y].piece = -1;
-                board_table[this.x][this.y].piece_color = -1;
-                this.x = x;
-                this.y = y;
-                clearBoard();
-                setState(false);
-            }
-            else {
-                board_table[x][y].square_check = 1;
-                piece[board_table[x][y].piece].lookMoves(board_table, x, y);
-                this.x = x;
-                this.y = y;
-                setState(true);
-            }
-        }
-
-        public void setState(boolean state) {
-            this.state = state;
         }
     }
 
@@ -89,16 +44,7 @@ public class Board extends VBox {
         canvas.setWidth(SQ_SIZE * 9);
         canvas.setHeight(SQ_SIZE * 9);
 
-        canvas.addEventFilter(MouseEvent.MOUSE_PRESSED, new EventHandler<javafx.scene.input.MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                mouseClick((int)event.getSceneX(), (int)event.getSceneY());
-            }
-        });
-
         gc = canvas.getGraphicsContext2D();
-
-        select = new Select();
 
         piece[PAWN] = new Pawn();
         piece[KNIGHT] = new Knight();
@@ -112,7 +58,7 @@ public class Board extends VBox {
         getChildren().add(canvas);
     }
 
-    private void initBoard() {
+    protected void initBoard() {
 
         board_table = new BoardTable[8][8];
 
@@ -158,7 +104,7 @@ public class Board extends VBox {
         }
     }
 
-    private void clearBoard() {
+    protected void clearBoard() {
         for (int y = 0; y < 8; y++)
         {
             for (int x = 0; x < 8; x++) {
@@ -167,7 +113,16 @@ public class Board extends VBox {
         }
     }
 
-    public void draw() {
+    protected void clearBoardPawn() {
+        for (int y = 0; y < 8; y++)
+        {
+            for (int x = 0; x < 8; x++) {
+                board_table[x][y].square_pawn = false;
+            }
+        }
+    }
+
+    protected void drawBoard() {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
         gc.setFill(Color.GOLD);
@@ -197,7 +152,7 @@ public class Board extends VBox {
                     piece[board_table[x][y].piece].draw(gc, xx, yy, board_table[x][y].piece_color);
                 }
 
-                if (board_table[x][y].square_check == 2) {
+                if (board_table[x][y].square_check > 1) {
                     gc.setFill(Color.GREEN);
                     gc.fillOval(xx + SQ_SIZE / 3, yy + SQ_SIZE / 3, SQ_SIZE / 3, SQ_SIZE / 3);
                 }
@@ -217,17 +172,6 @@ public class Board extends VBox {
 
         for (int i = 0; i < 8; i++) {
             gc.fillText(Integer.toString(i + 1), SQ_PAD / 4, SQ_PAD + SQ_SIZE / 2 + i * SQ_SIZE + 4);
-        }
-    }
-
-    public void mouseClick(int mx, int my) {
-
-        if (mx > SQ_PAD && mx < SQ_PAD + 8 * SQ_SIZE && my > SQ_PAD && my < SQ_PAD + 8 * SQ_SIZE) {
-            mx = (mx - SQ_PAD) / SQ_SIZE;
-            my = (my - SQ_PAD) / SQ_SIZE;
-
-            select.setXY(mx, my);
-            draw();
         }
     }
 }
