@@ -98,6 +98,8 @@ public class Board extends VBox {
         select = new Select();
 
         piece[Piece.PAWN] = new Pawn();
+        piece[Piece.KNIGHT] = new Knight();
+        piece[Piece.BISHOP] = new Bishop();
 
         initBoard();
 
@@ -127,11 +129,11 @@ public class Board extends VBox {
             col = (col + 1) % 2;
         }
 
-        int[] white_pcs = {Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN,
+        int[] white_pcs = {Piece.PAWN, Piece.KNIGHT, Piece.BISHOP, Piece.PAWN, Piece.PAWN, Piece.BISHOP, Piece.KNIGHT, Piece.PAWN,
                            Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN};
 
         int[] black_pcs = {Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN,
-                           Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN};
+                           Piece.PAWN, Piece.KNIGHT, Piece.BISHOP, Piece.PAWN, Piece.PAWN, Piece.BISHOP, Piece.KNIGHT, Piece.PAWN};
 
         int x = 0;
         int y = 0;
