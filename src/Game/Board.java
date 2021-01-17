@@ -1,5 +1,7 @@
 package Game;
 
+import static Game.Piece.*;
+
 import javafx.event.EventHandler;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -7,6 +9,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+
 
 public class Board extends VBox {
     private Canvas canvas;
@@ -97,9 +100,12 @@ public class Board extends VBox {
 
         select = new Select();
 
-        piece[Piece.PAWN] = new Pawn();
-        piece[Piece.KNIGHT] = new Knight();
-        piece[Piece.BISHOP] = new Bishop();
+        piece[PAWN] = new Pawn();
+        piece[KNIGHT] = new Knight();
+        piece[BISHOP] = new Bishop();
+        piece[ROCK] = new Rock();
+        piece[QUEEN] = new Queen();
+        piece[KING] = new King();
 
         initBoard();
 
@@ -129,21 +135,21 @@ public class Board extends VBox {
             col = (col + 1) % 2;
         }
 
-        int[] white_pcs = {Piece.PAWN, Piece.KNIGHT, Piece.BISHOP, Piece.PAWN, Piece.PAWN, Piece.BISHOP, Piece.KNIGHT, Piece.PAWN,
-                           Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN};
+        int[] white_pcs = {ROCK, KNIGHT, BISHOP, KING, QUEEN, BISHOP, KNIGHT, ROCK,
+                           PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN};
 
-        int[] black_pcs = {Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN,
-                           Piece.PAWN, Piece.KNIGHT, Piece.BISHOP, Piece.PAWN, Piece.PAWN, Piece.BISHOP, Piece.KNIGHT, Piece.PAWN};
+        int[] black_pcs = {PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN,
+                           ROCK, KNIGHT, BISHOP, QUEEN, KING, BISHOP, KNIGHT, ROCK};
 
         int x = 0;
         int y = 0;
 
         for (int i = 0; i < 16; i++) {
             board_table[x][y].piece = white_pcs[i];
-            board_table[x][y].piece_color = Piece.WHITE;
+            board_table[x][y].piece_color = WHITE;
 
             board_table[x][y + 6].piece = black_pcs[i];
-            board_table[x][y + 6].piece_color = Piece.BLACK;
+            board_table[x][y + 6].piece_color = BLACK;
 
             if (++x == 8) {
                 x = 0;
