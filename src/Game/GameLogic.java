@@ -16,6 +16,7 @@ public class GameLogic extends Board{
     private final boolean[] king_move;
     private final boolean[] rock_left_move;
     private final boolean[] rock_right_move;
+    private final int[] pieces_win;
 
     private Vector<Escape> escape_moves;
 
@@ -39,11 +40,13 @@ public class GameLogic extends Board{
         this.rock_left_move = new boolean[2];
         this.rock_right_move = new boolean[2];
         this.escape_moves = new Vector<Escape>(16);
+        this.pieces_win = new int[2];
 
         canvas.addEventFilter(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                mouseClick((int)event.getSceneX(), (int)event.getSceneY());
+                mouseClick((int)(event.getSceneX() - canvas.getLayoutX()),
+                               (int)(event.getSceneY() - canvas.getLayoutY()));
             }
         });
 
@@ -56,6 +59,8 @@ public class GameLogic extends Board{
         this.state = false;
         this.check = false;
         this.cur_player = WHITE;
+        this.pieces_win[WHITE] = 0;
+        this.pieces_win[BLACK] = 0;
 
         this.king_move[WHITE] = false;
         this.king_move[BLACK] = false;
@@ -73,9 +78,9 @@ public class GameLogic extends Board{
 
     public void mouseClick(int mx, int my) {
 
-        if (mx > SQ_PAD && mx < SQ_PAD + 8 * SQ_SIZE && my > SQ_PAD && my < SQ_PAD + 8 * SQ_SIZE) {
-            mx = (mx - SQ_PAD) / SQ_SIZE;
-            my = (my - SQ_PAD) / SQ_SIZE;
+        if (mx > SQ_SIZE && mx < SQ_SIZE + 8 * SQ_SIZE && my > SQ_SIZE && my < SQ_SIZE + 8 * SQ_SIZE) {
+            mx = (mx - SQ_SIZE) / SQ_SIZE;
+            my = (my - SQ_SIZE) / SQ_SIZE;
 
             setXY(mx, my);
             drawBoard();
@@ -107,6 +112,20 @@ public class GameLogic extends Board{
                 case KING:
                     king_move[cur_player] = true;
                     break;
+            }
+
+            if (board_table[GAME][x][y].piece > NONE) {
+                if (cur_player == WHITE) {
+                    piece[board_table[GAME][x][y].piece].draw(gc, SQ_SIZE - (SQ_SIZE / 8) + pieces_win[WHITE] * (SQ_SIZE / 4),
+                            SQ_SIZE * 9 + SQ_SIZE / 3, SQ_SIZE / 2, SQ_SIZE / 2, BLACK);
+                    ++pieces_win[WHITE];
+                }
+                else {
+                    ++pieces_win[BLACK];
+                    piece[board_table[GAME][x][y].piece].draw(gc, SQ_SIZE * 9 - pieces_win[BLACK] * (SQ_SIZE / 4) - (SQ_SIZE / 8),
+                            SQ_SIZE * 9 + SQ_SIZE / 3, SQ_SIZE / 2, SQ_SIZE / 2, WHITE);
+                }
+
             }
 
             board_table[GAME][x][y].piece = board_table[GAME][this.x][this.y].piece;

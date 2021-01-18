@@ -1,19 +1,12 @@
 package Game;
 
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 
 public class King extends Piece {
-    static final Image[] img = new Image[2];
 
     King() {
         img[WHITE] = new Image("king_w.png");
         img[BLACK] = new Image("king_b.png");
-    }
-
-    @Override
-    public void draw(GraphicsContext gc, int x, int y, int type) {
-        gc.drawImage(img[type], x, y);
     }
 
     @Override

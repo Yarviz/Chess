@@ -14,7 +14,6 @@ public class Board extends VBox {
     protected GraphicsContext gc;
 
     static final int SQ_SIZE = 64;
-    static final int SQ_PAD = SQ_SIZE / 2;
     static final int DIF_PIECES = 6;
     static final int GAME = 0;
     static final int TEMP = 1;
@@ -41,8 +40,8 @@ public class Board extends VBox {
     Board() {
 
         canvas = new Canvas();
-        canvas.setWidth(SQ_SIZE * 9);
-        canvas.setHeight(SQ_SIZE * 9);
+        canvas.setWidth(SQ_SIZE * 10);
+        canvas.setHeight(SQ_SIZE * 10);
 
         gc = canvas.getGraphicsContext2D();
 
@@ -88,6 +87,18 @@ public class Board extends VBox {
                 x = 0;
                 ++y;
             }
+        }
+
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        gc.setFill(Color.BLACK);
+        gc.setFont(Font.font("Verdana", SQ_SIZE / 4));
+
+        for (int i = 0; i < 8; i++) {
+            gc.fillText(Character.toString('A' + i), SQ_SIZE + SQ_SIZE / 2 + i * SQ_SIZE - 4, SQ_SIZE - SQ_SIZE / 4);
+        }
+
+        for (int i = 0; i < 8; i++) {
+            gc.fillText(Integer.toString(i + 1), SQ_SIZE - SQ_SIZE / 2, SQ_SIZE + SQ_SIZE / 2 + i * SQ_SIZE + 4);
         }
     }
 
@@ -140,16 +151,15 @@ public class Board extends VBox {
     }
 
     protected void drawBoard() {
-        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
         gc.setFill(Color.GOLD);
-        gc.fillRect(SQ_PAD - (SQ_PAD / 8), SQ_PAD - (SQ_PAD / 8),
-                    8 * SQ_SIZE + SQ_PAD / 4, 8 * SQ_SIZE + SQ_PAD / 4);
+        gc.fillRect(SQ_SIZE - (SQ_SIZE / 8), SQ_SIZE - (SQ_SIZE / 8),
+                    8 * SQ_SIZE + SQ_SIZE / 4, 8 * SQ_SIZE + SQ_SIZE / 4);
 
         Color[]  color = {Color.GOLDENROD, Color.BROWN};
         int col = 1;
-        int xx = SQ_PAD;
-        int yy = SQ_PAD;
+        int xx = SQ_SIZE;
+        int yy = SQ_SIZE;
 
         for (int y = 0; y < 8; y++)
         {
@@ -167,7 +177,7 @@ public class Board extends VBox {
                 }
 
                 if (board_table[GAME][x][y].piece > NONE) {
-                    piece[board_table[GAME][x][y].piece].draw(gc, xx, yy, board_table[GAME][x][y].piece_color);
+                    piece[board_table[GAME][x][y].piece].draw(gc, xx, yy, SQ_SIZE, SQ_SIZE, board_table[GAME][x][y].piece_color);
                 }
 
                 if (board_table[GAME][x][y].square_check > 3) {
@@ -183,19 +193,8 @@ public class Board extends VBox {
                 xx += SQ_SIZE;
             }
             col ^= 1;
-            xx = SQ_PAD;
+            xx = SQ_SIZE;
             yy += SQ_SIZE;
-        }
-
-        gc.setFill(Color.BLACK);
-        gc.setFont(Font.font("Verdana", SQ_SIZE / 4));
-
-        for (int i = 0; i < 8; i++) {
-            gc.fillText(Character.toString('A' + i), SQ_PAD + SQ_SIZE / 2 + i * SQ_SIZE - 4, SQ_PAD / 2);
-        }
-
-        for (int i = 0; i < 8; i++) {
-            gc.fillText(Integer.toString(i + 1), SQ_PAD / 4, SQ_PAD + SQ_SIZE / 2 + i * SQ_SIZE + 4);
         }
     }
 }

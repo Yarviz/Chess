@@ -1,6 +1,8 @@
 package Game;
 
+import static Game.Board.*;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 
 public abstract class Piece {
 
@@ -15,10 +17,11 @@ public abstract class Piece {
     static final int QUEEN  = 4;
     static final int KING   = 5;
 
+    protected final Image[] img = new Image[2];
+
     protected boolean checkXY(int x, int y) {
         return (x >= 0 && x < 8 && y >= 0 && y < 8);
     }
-
-    public abstract void draw(GraphicsContext gc, int x, int y, int type);
+    public void draw(GraphicsContext gc, int x, int y, int w, int h, int type) { gc.drawImage(img[type], x, y, w, h); }
     public abstract boolean lookMoves(Board.BoardTable[][] board, int x, int y);
 }

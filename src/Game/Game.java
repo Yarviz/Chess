@@ -12,9 +12,9 @@ public class Game extends Application {
 
         BorderPane mainPane = new BorderPane();
         GameLogic logic = new GameLogic();
-        mainPane.setCenter(logic);
+        mainPane.setLeft(logic.canvas);
 
-        Scene game_scene = new Scene(mainPane,Board.SQ_SIZE * 12,Board.SQ_SIZE * 9);
+        Scene game_scene = new Scene(mainPane,Board.SQ_SIZE * 12,Board.SQ_SIZE * 10);
 
         primaryStage.setScene(game_scene);
         primaryStage.setTitle("Chess");
