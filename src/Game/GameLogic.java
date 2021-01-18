@@ -92,18 +92,27 @@ public class GameLogic extends Board{
 
         if (state) {
 
-            if (board_table[GAME][this.x][this.y].piece == KING) {
-                king_move[cur_player] = true;
-            }
-            else if (board_table[GAME][this.x][this.y].piece == ROCK) {
-                if (this.x == 0) rock_left_move[cur_player] = true;
+            switch (board_table[GAME][this.x][this.y].piece) {
+                case PAWN:
+                    if (y == 7 * (cur_player ^ 1)) {
+                        board_table[GAME][this.x][this.y].piece = QUEEN;
+                    }
+                    break;
+
+                case ROCK:
+                    if (this.x == 0) rock_left_move[cur_player] = true;
                     else if (this.x == 7) rock_right_move[cur_player] = true;
+                    break;
+
+                case KING:
+                    king_move[cur_player] = true;
+                    break;
             }
 
             board_table[GAME][x][y].piece = board_table[GAME][this.x][this.y].piece;
             board_table[GAME][x][y].piece_color = cur_player;
-            board_table[GAME][this.x][this.y].piece = -1;
-            board_table[GAME][this.x][this.y].piece_color = -1;
+            board_table[GAME][this.x][this.y].piece = NONE;
+            board_table[GAME][this.x][this.y].piece_color = NONE;
             this.x = x;
             this.y = y;
 
@@ -128,21 +137,21 @@ public class GameLogic extends Board{
                 if (lookMate(board_table[GAME][x][y].piece_color ^ 1)) {
                     System.out.println("Checkmate!!");
                 }
-                //else lookCheck(board_table[GAME][x][y].piece_color, GAME);
+
             }
             else this.check = false;
 
             if (board_table[GAME][x][y].square_check == 4) {
 
-                board_table[GAME][0][y].piece = -1;
-                board_table[GAME][0][y].piece_color = -1;
+                board_table[GAME][0][y].piece = NONE;
+                board_table[GAME][0][y].piece_color = NONE;
                 board_table[GAME][3][y].piece = ROCK;
                 board_table[GAME][3][y].piece_color = cur_player;
             }
             else if (board_table[GAME][x][y].square_check == 5) {
 
-                board_table[GAME][7][y].piece = -1;
-                board_table[GAME][7][y].piece_color = -1;
+                board_table[GAME][7][y].piece = NONE;
+                board_table[GAME][7][y].piece_color = NONE;
                 board_table[GAME][5][y].piece = ROCK;
                 board_table[GAME][5][y].piece_color = cur_player;
             }
@@ -152,7 +161,9 @@ public class GameLogic extends Board{
             cur_player ^= 1;
         }
         else if (board_table[GAME][x][y].piece_color == cur_player) {
+
             board_table[GAME][x][y].square_check = 1;
+
             if (this.check) {
                 for (int i = 0; i < escape_moves.size(); i++) {
                     if (escape_moves.get(i).x == x && escape_moves.get(i).y == y) {
@@ -195,7 +206,7 @@ public class GameLogic extends Board{
 
         while(x1 != x2) {
             x1 += x_add;
-            if (board_table[GAME][x1][y].piece > -1) return;
+            if (board_table[GAME][x1][y].piece > NONE) return;
         }
 
         x1 = x;
@@ -293,7 +304,7 @@ public class GameLogic extends Board{
         for (int yy = 0; yy < 8; yy++) {
             for (int xx = 0; xx < 8; xx++) {
 
-                if (board_table[GAME][xx][yy].square_check > 1 && (board_table[GAME][xx][yy].piece > -1 || cur_piece == KING)) {
+                if (board_table[GAME][xx][yy].square_check > 1 && (board_table[GAME][xx][yy].piece > NONE || cur_piece == KING)) {
 
                     copyBoard();
                     board_table[TEMP][xx][yy].piece = cur_piece;

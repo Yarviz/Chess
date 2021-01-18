@@ -33,8 +33,8 @@ public class Board extends VBox {
             this.square_pawn = false;
             this.square_checkmate = false;
             this.square_check = 0;
-            this.piece_color = -1;
-            this.piece = -1;
+            this.piece_color = NONE;
+            this.piece = NONE;
         }
     }
 
@@ -104,7 +104,7 @@ public class Board extends VBox {
         for (int y = 0; y < 8; y++)
         {
             for (int x = 0; x < 8; x++) {
-                if (board_table[GAME][x][y].piece == -1) board_table[GAME][x][y].square_check = 0;
+                if (board_table[GAME][x][y].piece == NONE) board_table[GAME][x][y].square_check = 0;
             }
         }
     }
@@ -166,7 +166,7 @@ public class Board extends VBox {
                     gc.fillRect(xx, yy, SQ_SIZE, SQ_SIZE);
                 }
 
-                if (board_table[GAME][x][y].piece > -1) {
+                if (board_table[GAME][x][y].piece > NONE) {
                     piece[board_table[GAME][x][y].piece].draw(gc, xx, yy, board_table[GAME][x][y].piece_color);
                 }
 
@@ -178,8 +178,6 @@ public class Board extends VBox {
                     gc.setFill(Color.GREEN);
                     gc.fillOval(xx + SQ_SIZE / 3, yy + SQ_SIZE / 3, SQ_SIZE / 3, SQ_SIZE / 3);
                 }
-
-
 
                 col ^= 1;
                 xx += SQ_SIZE;
