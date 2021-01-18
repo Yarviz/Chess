@@ -53,13 +53,6 @@ public class Board extends VBox {
         piece[QUEEN] = new Queen();
         piece[KING] = new King();
 
-        initBoard();
-
-        getChildren().add(canvas);
-    }
-
-    protected void initBoard() {
-
         board_table = new BoardTable[2][8][8];
 
         for (int y = 0; y < 8; y++) {
@@ -69,23 +62,27 @@ public class Board extends VBox {
             }
         }
 
+        getChildren().add(canvas);
+    }
+
+    protected void initBoard() {
         clearBoard();
 
-        int[] white_pcs = {ROCK, KNIGHT, BISHOP, KING, QUEEN, BISHOP, KNIGHT, ROCK,
+        int[] black_pcs = {ROCK, KNIGHT, BISHOP, QUEEN, KING, BISHOP, KNIGHT, ROCK,
                            PAWN, PAWN  , PAWN  , PAWN , PAWN, PAWN  , PAWN  , PAWN};
 
-        int[] black_pcs = {PAWN, PAWN  , PAWN  , PAWN , PAWN, PAWN  , PAWN  , PAWN,
+        int[] white_pcs = {PAWN, PAWN  , PAWN  , PAWN , PAWN, PAWN  , PAWN  , PAWN,
                            ROCK, KNIGHT, BISHOP, QUEEN, KING, BISHOP, KNIGHT, ROCK};
 
         int x = 0;
         int y = 0;
 
         for (int i = 0; i < 16; i++) {
-            board_table[GAME][x][y].piece = white_pcs[i];
-            board_table[GAME][x][y].piece_color = WHITE;
+            board_table[GAME][x][y].piece = black_pcs[i];
+            board_table[GAME][x][y].piece_color = BLACK;
 
-            board_table[GAME][x][y + 6].piece = black_pcs[i];
-            board_table[GAME][x][y + 6].piece_color = BLACK;
+            board_table[GAME][x][y + 6].piece = white_pcs[i];
+            board_table[GAME][x][y + 6].piece_color = WHITE;
 
             if (++x == 8) {
                 x = 0;
@@ -103,6 +100,15 @@ public class Board extends VBox {
         }
     }
 
+    protected void clearBoardIllegal() {
+        for (int y = 0; y < 8; y++)
+        {
+            for (int x = 0; x < 8; x++) {
+                if (board_table[GAME][x][y].piece == -1) board_table[GAME][x][y].square_check = 0;
+            }
+        }
+    }
+
     protected void clearBoardPawn() {
         for (int y = 0; y < 8; y++)
         {
@@ -112,11 +118,11 @@ public class Board extends VBox {
         }
     }
 
-    protected void clearBoardCheckMate() {
+    protected void clearBoardCheckMate(int table) {
         for (int y = 0; y < 8; y++)
         {
             for (int x = 0; x < 8; x++) {
-                board_table[GAME][x][y].square_checkmate = false;
+                board_table[table][x][y].square_checkmate = false;
             }
         }
     }
@@ -164,15 +170,16 @@ public class Board extends VBox {
                     piece[board_table[GAME][x][y].piece].draw(gc, xx, yy, board_table[GAME][x][y].piece_color);
                 }
 
-                if (board_table[GAME][x][y].square_check > 1) {
+                if (board_table[GAME][x][y].square_check > 3) {
+                    gc.setFill(Color.BLUE);
+                    gc.fillOval(xx + SQ_SIZE / 3, yy + SQ_SIZE / 3, SQ_SIZE / 3, SQ_SIZE / 3);
+                }
+                else if (board_table[GAME][x][y].square_check > 1) {
                     gc.setFill(Color.GREEN);
                     gc.fillOval(xx + SQ_SIZE / 3, yy + SQ_SIZE / 3, SQ_SIZE / 3, SQ_SIZE / 3);
                 }
 
-                if (board_table[GAME][x][y].square_checkmate) {
-                    gc.setFill(Color.BLUE);
-                    gc.fillOval(xx + SQ_SIZE / 3, yy + SQ_SIZE / 3, SQ_SIZE / 3, SQ_SIZE / 3);
-                }
+
 
                 col ^= 1;
                 xx += SQ_SIZE;

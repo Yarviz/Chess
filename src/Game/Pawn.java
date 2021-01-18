@@ -23,7 +23,7 @@ public class Pawn extends Piece {
         int piece_col = board[x][y].piece_color;
         boolean checkmate = false;
 
-        if (piece_col == BLACK) {
+        if (piece_col == WHITE) {
             y_add = -1;
             y_line = 6;
         }
@@ -48,7 +48,7 @@ public class Pawn extends Piece {
                  || board[x + 1][y + y_add].square_pawn) {
                 board[x + 1][y + y_add].square_check = 2;
 
-                if (board[x - 1][y + y_add].piece == KING) {
+                if (board[x + 1][y + y_add].piece == KING) {
                     board[x][y].square_checkmate = true;
                     checkmate = true;
                 }

@@ -5,8 +5,8 @@ import javafx.scene.canvas.GraphicsContext;
 public abstract class Piece {
 
     static final int NONE  = -1;
-    static final int WHITE = 0;
-    static final int BLACK = 1;
+    static final int BLACK = 0;
+    static final int WHITE = 1;
 
     static final int PAWN   = 0;
     static final int KNIGHT = 1;
