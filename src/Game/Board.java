@@ -16,15 +16,16 @@ public class Board extends VBox {
     static final int SQ_SIZE = 64;
     static final int SQ_PAD = SQ_SIZE / 2;
     static final int DIF_PIECES = 6;
+    static final int GAME = 0;
+    static final int TEMP = 1;
 
-    protected BoardTable[][] board_table;
+    protected BoardTable[][][] board_table;
     protected final Piece[] piece = new Piece[DIF_PIECES];
 
     public static class BoardTable {
         public boolean square_pawn;
         public boolean square_checkmate;
         public int square_check;
-        public int square_color;
         public int piece;
         public int piece_color;
 
@@ -32,7 +33,6 @@ public class Board extends VBox {
             this.square_pawn = false;
             this.square_checkmate = false;
             this.square_check = 0;
-            this.square_color = 0;
             this.piece_color = -1;
             this.piece = -1;
         }
@@ -60,26 +60,16 @@ public class Board extends VBox {
 
     protected void initBoard() {
 
-        board_table = new BoardTable[8][8];
+        board_table = new BoardTable[2][8][8];
 
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
-                board_table[x][y] = new BoardTable();
+                board_table[GAME][x][y] = new BoardTable();
+                board_table[TEMP][x][y] = new BoardTable();
             }
         }
 
         clearBoard();
-
-        int col = 1;
-        for (int y = 0; y < 8; y++)
-        {
-            for (int x = 0; x < 8; x++)
-            {
-                col = (col + 1) % 2;
-                board_table[x][y].square_color = col;
-            }
-            col = (col + 1) % 2;
-        }
 
         int[] white_pcs = {ROCK, KNIGHT, BISHOP, KING, QUEEN, BISHOP, KNIGHT, ROCK,
                            PAWN, PAWN  , PAWN  , PAWN , PAWN, PAWN  , PAWN  , PAWN};
@@ -91,11 +81,11 @@ public class Board extends VBox {
         int y = 0;
 
         for (int i = 0; i < 16; i++) {
-            board_table[x][y].piece = white_pcs[i];
-            board_table[x][y].piece_color = WHITE;
+            board_table[GAME][x][y].piece = white_pcs[i];
+            board_table[GAME][x][y].piece_color = WHITE;
 
-            board_table[x][y + 6].piece = black_pcs[i];
-            board_table[x][y + 6].piece_color = BLACK;
+            board_table[GAME][x][y + 6].piece = black_pcs[i];
+            board_table[GAME][x][y + 6].piece_color = BLACK;
 
             if (++x == 8) {
                 x = 0;
@@ -108,7 +98,7 @@ public class Board extends VBox {
         for (int y = 0; y < 8; y++)
         {
             for (int x = 0; x < 8; x++) {
-                board_table[x][y].square_check = 0;
+                board_table[GAME][x][y].square_check = 0;
             }
         }
     }
@@ -117,7 +107,7 @@ public class Board extends VBox {
         for (int y = 0; y < 8; y++)
         {
             for (int x = 0; x < 8; x++) {
-                board_table[x][y].square_pawn = false;
+                board_table[GAME][x][y].square_pawn = false;
             }
         }
     }
@@ -126,7 +116,19 @@ public class Board extends VBox {
         for (int y = 0; y < 8; y++)
         {
             for (int x = 0; x < 8; x++) {
-                board_table[x][y].square_checkmate = false;
+                board_table[GAME][x][y].square_checkmate = false;
+            }
+        }
+    }
+
+    protected void copyBoard() {
+        for (int y = 0; y < 8; y++)
+        {
+            for (int x = 0; x < 8; x++) {
+                board_table[TEMP][x][y].square_checkmate = board_table[GAME][x][y].square_checkmate;
+                board_table[TEMP][x][y].square_check = board_table[GAME][x][y].square_check;
+                board_table[TEMP][x][y].piece = board_table[GAME][x][y].piece;
+                board_table[TEMP][x][y].piece_color = board_table[GAME][x][y].piece_color;
             }
         }
     }
@@ -138,7 +140,8 @@ public class Board extends VBox {
         gc.fillRect(SQ_PAD - (SQ_PAD / 8), SQ_PAD - (SQ_PAD / 8),
                     8 * SQ_SIZE + SQ_PAD / 4, 8 * SQ_SIZE + SQ_PAD / 4);
 
-        Color[]  col = {Color.GOLDENROD, Color.BROWN};
+        Color[]  color = {Color.GOLDENROD, Color.BROWN};
+        int col = 1;
         int xx = SQ_PAD;
         int yy = SQ_PAD;
 
@@ -146,33 +149,35 @@ public class Board extends VBox {
         {
             for (int x = 0; x < 8; x++)
             {
-                if (board_table[x][y].square_check == 1) {
+                if (board_table[GAME][x][y].square_check == 1) {
                     gc.setFill(Color.GRAY);
                     gc.fillRect(xx, yy, SQ_SIZE, SQ_SIZE);
-                    gc.setFill(col[board_table[x][y].square_color]);
+                    gc.setFill(color[col]);
                     gc.fillRect(xx + 4, yy + 4, SQ_SIZE - 8, SQ_SIZE - 8);
                 }
                 else {
-                    gc.setFill(col[board_table[x][y].square_color]);
+                    gc.setFill(color[col]);
                     gc.fillRect(xx, yy, SQ_SIZE, SQ_SIZE);
                 }
 
-                if (board_table[x][y].piece > -1) {
-                    piece[board_table[x][y].piece].draw(gc, xx, yy, board_table[x][y].piece_color);
+                if (board_table[GAME][x][y].piece > -1) {
+                    piece[board_table[GAME][x][y].piece].draw(gc, xx, yy, board_table[GAME][x][y].piece_color);
                 }
 
-                if (board_table[x][y].square_check > 1) {
+                if (board_table[GAME][x][y].square_check > 1) {
                     gc.setFill(Color.GREEN);
                     gc.fillOval(xx + SQ_SIZE / 3, yy + SQ_SIZE / 3, SQ_SIZE / 3, SQ_SIZE / 3);
                 }
 
-                if (board_table[x][y].square_checkmate) {
+                if (board_table[GAME][x][y].square_checkmate) {
                     gc.setFill(Color.BLUE);
                     gc.fillOval(xx + SQ_SIZE / 3, yy + SQ_SIZE / 3, SQ_SIZE / 3, SQ_SIZE / 3);
                 }
 
+                col ^= 1;
                 xx += SQ_SIZE;
             }
+            col ^= 1;
             xx = SQ_PAD;
             yy += SQ_SIZE;
         }
