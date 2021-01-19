@@ -2,6 +2,7 @@ package Game;
 
 import static Piece.Piece.*;
 
+import Main.Chess;
 import javafx.event.EventHandler;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.TextArea;
@@ -19,6 +20,7 @@ public class GameLogic extends Board{
 
     private int x, y;
     private int cur_player;
+    private int replay_count;
     private boolean state;
     private boolean check;
     private boolean checkmate;
@@ -28,45 +30,55 @@ public class GameLogic extends Board{
     private final boolean[] rook_right_move;
     private final int[] pieces_win;
 
-    private final Vector<Escape> escape_moves;
+    private enum GameType {
+        PLAY,
+        REPLAY
+    }
+
+    private GameType game_state;
+    private final Vector<Move> escape_moves;
+    private final Vector<Move> moves;
     private TextArea infoText;
     private Timer checkTimer;
+    private Chess parent;
 
-    private static class Escape {
+    private static class Move {
         public int x;
         public int y;
         public int x2;
         public int y2;
+        public int piece;
 
-        Escape(int x, int y, int x2, int y2) {
+        Move(int x, int y, int x2, int y2, int piece) {
             this.x = x;
             this.y = y;
             this.x2 = x2;
             this.y2 = y2;
+            this.piece = piece;
         }
     }
 
-    public GameLogic() {
+    public GameLogic(Chess parent) {
 
+        this.parent = parent;
         this.king_move = new boolean[2];
         this.rook_left_move = new boolean[2];
         this.rook_right_move = new boolean[2];
-        this.escape_moves = new Vector<Escape>(16);
+        this.escape_moves = new Vector<>(16);
         this.pieces_win = new int[2];
+        this.moves = new Vector<>(64);
 
         infoText = new TextArea();
-        infoText.setFont(Font.font("Arial", SQ_SIZE / 4));
+        infoText.setFont(Font.font("Consolas", SQ_SIZE / 4));
         infoText.setMaxSize(SQ_SIZE * 3, SQ_SIZE * 8);
         infoText.setMinHeight(SQ_SIZE * 8);
         infoText.setEditable(false);
         infoText.setWrapText(true);
 
-        canvas.addEventFilter(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                mouseClick((int)(event.getSceneX() - canvas.getLayoutX()),
-                               (int)(event.getSceneY() - canvas.getLayoutY()));
-            }
+        canvas.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
+            if (checkmate) return;
+            mouseClick((int)(event.getSceneX() - canvas.getLayoutX()),
+                           (int)(event.getSceneY() - canvas.getLayoutY()));
         });
 
         checkTimer = new Timer();
@@ -92,25 +104,26 @@ public class GameLogic extends Board{
         this.rook_right_move[WHITE] = false;
         this.rook_right_move[BLACK] = false;
 
+        this.game_state = GameType.PLAY;
+        this.replay_count = 0;
+        this.infoText.clear();
+
         initBoard();
+        drawBoard();
     }
 
     public void drawCanvas() {
         drawBoard();
     }
-
     public Canvas getCanvas() {
         return canvas;
     }
-
     public TextArea getInfoBox() {
         return infoText;
     }
-
     public int getGameWidth() {
         return SQ_SIZE * 14;
     }
-
     public int getGameHeight() {
         return SQ_SIZE * 10;
     }
@@ -127,6 +140,33 @@ public class GameLogic extends Board{
             }
         }
         else choosePiece(mx, my);
+    }
+
+    public void startReplay() {
+        initGame();
+        game_state = GameType.REPLAY;
+    }
+
+    public void replayStep() {
+
+        int x = moves.get(replay_count).x;
+        int y = moves.get(replay_count).y;
+        int x2 = moves.get(replay_count).x2;
+        int y2 = moves.get(replay_count).y2;
+
+        removePiece(x2, y2);
+
+        board_table[GAME][x][y].piece = NONE;
+        board_table[GAME][x2][y2].piece_color = (replay_count + 1) % 2;
+        board_table[GAME][x2][y2].piece = moves.get(replay_count).piece;
+
+        addMove(x, y, x2, y2);
+        drawBoard();
+
+        if (replay_count == moves.size()) {
+            game_state = GameType.PLAY;
+            parent.gameEnded("Replay Again");
+        }
     }
 
     private void choosePiece(int mx, int my) {
@@ -152,13 +192,20 @@ public class GameLogic extends Board{
         }, 3000);
     }
 
-    private void addMoveText(int x, int y) {
-        String text = Character.toString('A' + this.x);
-        text += (this.y + 1) + ":";
-        text += Character.toString('A' + x);
-        text += (y + 1) + "  ";
+    private void addMove(int x, int y, int x2, int y2) {
+        String text = Character.toString('A' + x);
+        text += (y + 1) + ":";
+        text += Character.toString('A' + x2);
+        text += (y2 + 1) + " ";
 
         infoText.appendText(text);
+
+        if (game_state == GameType.PLAY){
+            Move mov = new Move(x, y, x2, y2, board_table[GAME][this.x][this.y].piece);
+            moves.add(mov);
+        }
+
+        ++replay_count;
     }
 
     private void setXY(int x, int y) {
@@ -173,7 +220,7 @@ public class GameLogic extends Board{
         if (state) {
 
             removePiece(x, y);
-            addMoveText(x, y);
+            addMove(this.x, this.y, x, y);
 
             board_table[GAME][x][y].piece = board_table[GAME][this.x][this.y].piece;
             board_table[GAME][x][y].piece_color = cur_player;
@@ -194,9 +241,14 @@ public class GameLogic extends Board{
 
             if (!choose_piece) cur_player ^= 1;
             if (check) {
-                if (!checkmate) drawText("Check");
-                    else drawText("Checkmate");
-                setTimer();
+                if (!checkmate) {
+                    drawText("Check");
+                    setTimer();
+                }
+                else {
+                    drawText("Checkmate");
+                    parent.gameEnded("Replay Game");
+                }
             }
         }
         else if (board_table[GAME][x][y].piece_color == cur_player) {
@@ -264,7 +316,7 @@ public class GameLogic extends Board{
     private void lookIllegalMoves() {
 
         if (this.check) {
-            for (Escape escape_move : escape_moves) {
+            for (Move escape_move : escape_moves) {
                 if (escape_move.x == x && escape_move.y == y) {
                     board_table[GAME][escape_move.x2][escape_move.y2].square_check = 2;
                 }
@@ -410,7 +462,7 @@ public class GameLogic extends Board{
 
                     if (!lookCheck(cur_color ^ 1, TEMP)) {
                         escape = true;
-                        escape_moves.add(new Escape(x, y, xx, yy));
+                        escape_moves.add(new Move(x, y, xx, yy, 0));
                         System.out.printf("Escape %c%d->%c%d%n", ('A' + x), y + 1, ('A' + xx), yy + 1);
                     }
                 }

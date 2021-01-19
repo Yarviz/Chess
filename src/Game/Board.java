@@ -72,6 +72,7 @@ public class Board {
 
     protected void initBoard() {
         clearBoard();
+        clearBoardPieces();
 
         int[] black_pcs = {ROOK, KNIGHT, BISHOP, QUEEN, KING, BISHOP, KNIGHT, ROOK,
                            PAWN, PAWN  , PAWN  , PAWN , PAWN, PAWN  , PAWN  , PAWN};
@@ -113,6 +114,16 @@ public class Board {
         {
             for (int x = 0; x < 8; x++) {
                 board_table[GAME][x][y].square_check = 0;
+            }
+        }
+    }
+
+    protected void clearBoardPieces() {
+        for (int y = 0; y < 8; y++)
+        {
+            for (int x = 0; x < 8; x++) {
+                board_table[GAME][x][y].piece = NONE;
+                board_table[GAME][x][y].piece_color = NONE;
             }
         }
     }

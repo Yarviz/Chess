@@ -1,2 +1,2 @@
-# Chess
-Chess game made with java
+# Main.Chess
+Main.Chess game made with java
