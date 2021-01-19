@@ -55,7 +55,7 @@ public class Board extends VBox {
         piece[PAWN] = new Pawn();
         piece[KNIGHT] = new Knight();
         piece[BISHOP] = new Bishop();
-        piece[ROCK] = new Rock();
+        piece[ROOK] = new Rook();
         piece[QUEEN] = new Queen();
         piece[KING] = new King();
 
@@ -74,11 +74,11 @@ public class Board extends VBox {
     protected void initBoard() {
         clearBoard();
 
-        int[] black_pcs = {ROCK, KNIGHT, BISHOP, QUEEN, KING, BISHOP, KNIGHT, ROCK,
+        int[] black_pcs = {ROOK, KNIGHT, BISHOP, QUEEN, KING, BISHOP, KNIGHT, ROOK,
                            PAWN, PAWN  , PAWN  , PAWN , PAWN, PAWN  , PAWN  , PAWN};
 
         int[] white_pcs = {PAWN, PAWN  , PAWN  , PAWN , PAWN, PAWN  , PAWN  , PAWN,
-                           ROCK, KNIGHT, BISHOP, QUEEN, KING, BISHOP, KNIGHT, ROCK};
+                           ROOK, KNIGHT, BISHOP, QUEEN, KING, BISHOP, KNIGHT, ROOK};
 
         int x = 0;
         int y = 0;

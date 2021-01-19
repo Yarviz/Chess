@@ -15,8 +15,8 @@ public class GameLogic extends Board{
     private boolean check;
     private boolean choose_piece;
     private final boolean[] king_move;
-    private final boolean[] rock_left_move;
-    private final boolean[] rock_right_move;
+    private final boolean[] rook_left_move;
+    private final boolean[] rook_right_move;
     private final int[] pieces_win;
 
     private final Vector<Escape> escape_moves;
@@ -38,8 +38,8 @@ public class GameLogic extends Board{
     GameLogic() {
 
         this.king_move = new boolean[2];
-        this.rock_left_move = new boolean[2];
-        this.rock_right_move = new boolean[2];
+        this.rook_left_move = new boolean[2];
+        this.rook_right_move = new boolean[2];
         this.escape_moves = new Vector<Escape>(16);
         this.pieces_win = new int[2];
 
@@ -66,10 +66,10 @@ public class GameLogic extends Board{
 
         this.king_move[WHITE] = false;
         this.king_move[BLACK] = false;
-        this.rock_left_move[WHITE] = false;
-        this.rock_left_move[BLACK] = false;
-        this.rock_right_move[WHITE] = false;
-        this.rock_right_move[BLACK] = false;
+        this.rook_left_move[WHITE] = false;
+        this.rook_left_move[BLACK] = false;
+        this.rook_right_move[WHITE] = false;
+        this.rook_right_move[BLACK] = false;
 
         initBoard();
     }
@@ -207,8 +207,8 @@ public class GameLogic extends Board{
             piece[board_table[GAME][x][y].piece].lookMoves(board_table[GAME], x, y);
 
             if (board_table[GAME][x][y].piece == KING && !king_move[cur_player]) {
-                if (!rock_left_move[cur_player]) lookCastling(x, y, cur_player, 0);
-                if (!rock_right_move[cur_player]) lookCastling(x, y, cur_player, 1);
+                if (!rook_left_move[cur_player]) lookCastling(x, y, cur_player, 0);
+                if (!rook_right_move[cur_player]) lookCastling(x, y, cur_player, 1);
             }
 
             removeIllegalMoves(x, y);
@@ -225,9 +225,9 @@ public class GameLogic extends Board{
                 }
                 break;
 
-            case ROCK:
-                if (x == 0) rock_left_move[cur_player] = true;
-                else if (x == 7) rock_right_move[cur_player] = true;
+            case ROOK:
+                if (x == 0) rook_left_move[cur_player] = true;
+                else if (x == 7) rook_right_move[cur_player] = true;
                 break;
 
             case KING:
@@ -242,14 +242,14 @@ public class GameLogic extends Board{
 
             board_table[GAME][0][y].piece = NONE;
             board_table[GAME][0][y].piece_color = NONE;
-            board_table[GAME][3][y].piece = ROCK;
+            board_table[GAME][3][y].piece = ROOK;
             board_table[GAME][3][y].piece_color = cur_player;
         }
         else if (board_table[GAME][x][y].square_check == 5) {
 
             board_table[GAME][7][y].piece = NONE;
             board_table[GAME][7][y].piece_color = NONE;
-            board_table[GAME][5][y].piece = ROCK;
+            board_table[GAME][5][y].piece = ROOK;
             board_table[GAME][5][y].piece_color = cur_player;
         }
     }

@@ -13,7 +13,7 @@ public abstract class Piece {
     static final int PAWN   = 0;
     static final int KNIGHT = 1;
     static final int BISHOP = 2;
-    static final int ROCK   = 3;
+    static final int ROOK   = 3;
     static final int QUEEN  = 4;
     static final int KING   = 5;
 

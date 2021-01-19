@@ -3,11 +3,11 @@ package Game;
 
 import javafx.scene.image.Image;
 
-public class Rock extends Piece {
+public class Rook extends Piece {
 
-    Rock() {
-        img[WHITE] = new Image("rock_w.png");
-        img[BLACK] = new Image("rock_b.png");
+    Rook() {
+        img[WHITE] = new Image("rook_w.png");
+        img[BLACK] = new Image("rook_b.png");
     }
 
     @Override
