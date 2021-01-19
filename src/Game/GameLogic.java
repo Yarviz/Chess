@@ -3,14 +3,10 @@ package Game;
 import static Piece.Piece.*;
 
 import Main.Chess;
-import javafx.event.EventHandler;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -76,14 +72,12 @@ public class GameLogic extends Board{
         infoText.setWrapText(true);
 
         canvas.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
-            if (checkmate) return;
+            if (checkmate || game_state == GameType.REPLAY) return;
             mouseClick((int)(event.getSceneX() - canvas.getLayoutX()),
                            (int)(event.getSceneY() - canvas.getLayoutY()));
         });
 
         checkTimer = new Timer();
-
-        initGame();
     }
 
     public void initGame() {
@@ -112,9 +106,6 @@ public class GameLogic extends Board{
         drawBoard();
     }
 
-    public void drawCanvas() {
-        drawBoard();
-    }
     public Canvas getCanvas() {
         return canvas;
     }
@@ -127,6 +118,8 @@ public class GameLogic extends Board{
     public int getGameHeight() {
         return SQ_SIZE * 10;
     }
+    public int getMoveCount() {return replay_count;}
+    public void pauseGame() {game_state = GameType.REPLAY;}
 
     public void mouseClick(int mx, int my) {
 
@@ -175,6 +168,7 @@ public class GameLogic extends Board{
         mx = (mx - box_x) / SQ_SIZE;
 
         board_table[GAME][x][y].piece = KNIGHT + mx;
+        moves.get(replay_count - 1).piece = KNIGHT + mx;
         choose_piece = false;
         lookPlayerCheck();
         clearBoard();
