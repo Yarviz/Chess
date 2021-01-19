@@ -1,15 +1,16 @@
 package Game;
 
-import static Game.Piece.*;
+import static Piece.Piece.*;
 
+import Piece.*;
+import javafx.geometry.VPos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 
-
-public class Board extends VBox {
+public class Board {
     protected Canvas canvas;
     protected GraphicsContext gc;
 
@@ -67,8 +68,6 @@ public class Board extends VBox {
                 board_table[TEMP][x][y] = new BoardTable();
             }
         }
-
-        getChildren().add(canvas);
     }
 
     protected void initBoard() {
@@ -118,15 +117,6 @@ public class Board extends VBox {
         }
     }
 
-    protected void clearBoardIllegal() {
-        for (int y = 0; y < 8; y++)
-        {
-            for (int x = 0; x < 8; x++) {
-                if (board_table[GAME][x][y].piece == NONE) board_table[GAME][x][y].square_check = 0;
-            }
-        }
-    }
-
     protected void clearBoardPawn() {
         for (int y = 0; y < 8; y++)
         {
@@ -167,6 +157,14 @@ public class Board extends VBox {
 
         box_x = x;
         box_y = y;
+    }
+
+    protected void drawText(String text) {
+        gc.setFont(Font.font("Verdana", SQ_SIZE / 2));
+        gc.setFill(Color.WHITE);
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText(text, canvas.getWidth() / 2, canvas.getHeight() / 2);
     }
 
     protected void drawChooseBox(int col) {

@@ -1,10 +1,11 @@
-package Game;
+package Piece;
 
+import Game.Board;
 import javafx.scene.image.Image;
 
 public class Queen extends Piece {
 
-    Queen() {
+    public Queen() {
         img[WHITE] = new Image("queen_w.png");
         img[BLACK] = new Image("queen_b.png");
     }

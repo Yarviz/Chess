@@ -1,10 +1,11 @@
-package Game;
+package Piece;
 
+import Game.Board;
 import javafx.scene.image.Image;
 
 public class Pawn extends Piece {
 
-    Pawn() {
+    public Pawn() {
         img[WHITE] = new Image("pawn_w.png");
         img[BLACK] = new Image("pawn_b.png");
     }

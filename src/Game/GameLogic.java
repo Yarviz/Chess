@@ -1,10 +1,18 @@
 package Game;
 
-import static Game.Piece.*;
+import static Piece.Piece.*;
 
 import javafx.event.EventHandler;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.control.TextArea;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 
 public class GameLogic extends Board{
@@ -13,6 +21,7 @@ public class GameLogic extends Board{
     private int cur_player;
     private boolean state;
     private boolean check;
+    private boolean checkmate;
     private boolean choose_piece;
     private final boolean[] king_move;
     private final boolean[] rook_left_move;
@@ -20,6 +29,8 @@ public class GameLogic extends Board{
     private final int[] pieces_win;
 
     private final Vector<Escape> escape_moves;
+    private TextArea infoText;
+    private Timer checkTimer;
 
     private static class Escape {
         public int x;
@@ -35,13 +46,20 @@ public class GameLogic extends Board{
         }
     }
 
-    GameLogic() {
+    public GameLogic() {
 
         this.king_move = new boolean[2];
         this.rook_left_move = new boolean[2];
         this.rook_right_move = new boolean[2];
         this.escape_moves = new Vector<Escape>(16);
         this.pieces_win = new int[2];
+
+        infoText = new TextArea();
+        infoText.setFont(Font.font("Arial", SQ_SIZE / 4));
+        infoText.setMaxSize(SQ_SIZE * 3, SQ_SIZE * 8);
+        infoText.setMinHeight(SQ_SIZE * 8);
+        infoText.setEditable(false);
+        infoText.setWrapText(true);
 
         canvas.addEventFilter(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
             @Override
@@ -51,6 +69,8 @@ public class GameLogic extends Board{
             }
         });
 
+        checkTimer = new Timer();
+
         initGame();
     }
 
@@ -59,6 +79,7 @@ public class GameLogic extends Board{
         this.y = 0;
         this.state = false;
         this.check = false;
+        this.checkmate = false;
         this.choose_piece = false;
         this.cur_player = WHITE;
         this.pieces_win[WHITE] = 0;
@@ -78,6 +99,22 @@ public class GameLogic extends Board{
         drawBoard();
     }
 
+    public Canvas getCanvas() {
+        return canvas;
+    }
+
+    public TextArea getInfoBox() {
+        return infoText;
+    }
+
+    public int getGameWidth() {
+        return SQ_SIZE * 14;
+    }
+
+    public int getGameHeight() {
+        return SQ_SIZE * 10;
+    }
+
     public void mouseClick(int mx, int my) {
 
         if (!choose_piece) {
@@ -86,7 +123,6 @@ public class GameLogic extends Board{
                 my = (my - SQ_SIZE) / SQ_SIZE;
 
                 setXY(mx, my);
-                drawBoard();
                 if (choose_piece) drawChooseBox(cur_player);
             }
         }
@@ -107,17 +143,37 @@ public class GameLogic extends Board{
         drawBoard();
     }
 
+    private void setTimer() {
+        checkTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                drawBoard();
+            }
+        }, 3000);
+    }
+
+    private void addMoveText(int x, int y) {
+        String text = Character.toString('A' + this.x);
+        text += (this.y + 1) + ":";
+        text += Character.toString('A' + x);
+        text += (y + 1) + "  ";
+
+        infoText.appendText(text);
+    }
+
     private void setXY(int x, int y) {
         if (!state && board_table[GAME][x][y].piece == -1) return;
 
         if (board_table[GAME][x][y].square_check < 2 && state) {
             clearBoard();
+            drawBoard();
             this.state = false;
         }
 
         if (state) {
 
             removePiece(x, y);
+            addMoveText(x, y);
 
             board_table[GAME][x][y].piece = board_table[GAME][this.x][this.y].piece;
             board_table[GAME][x][y].piece_color = cur_player;
@@ -132,8 +188,16 @@ public class GameLogic extends Board{
 
             movePossibleCastling(x, y);
             clearBoard();
+            drawBoard();
+
             this.state = false;
+
             if (!choose_piece) cur_player ^= 1;
+            if (check) {
+                if (!checkmate) drawText("Check");
+                    else drawText("Checkmate");
+                setTimer();
+            }
         }
         else if (board_table[GAME][x][y].piece_color == cur_player) {
 
@@ -141,7 +205,9 @@ public class GameLogic extends Board{
             this.x = x;
             this.y = y;
             this.state = true;
+
             lookIllegalMoves();
+            drawBoard();
         }
     }
 
@@ -154,6 +220,7 @@ public class GameLogic extends Board{
 
             if (lookMate(board_table[GAME][x][y].piece_color ^ 1)) {
                 System.out.println("Checkmate!!");
+                this.checkmate = true;
             }
         }
         else this.check = false;
