@@ -13,14 +13,15 @@ public class GameLogic extends Board{
     private int cur_player;
     private boolean state;
     private boolean check;
+    private boolean choose_piece;
     private final boolean[] king_move;
     private final boolean[] rock_left_move;
     private final boolean[] rock_right_move;
     private final int[] pieces_win;
 
-    private Vector<Escape> escape_moves;
+    private final Vector<Escape> escape_moves;
 
-    private class Escape {
+    private static class Escape {
         public int x;
         public int y;
         public int x2;
@@ -58,6 +59,7 @@ public class GameLogic extends Board{
         this.y = 0;
         this.state = false;
         this.check = false;
+        this.choose_piece = false;
         this.cur_player = WHITE;
         this.pieces_win[WHITE] = 0;
         this.pieces_win[BLACK] = 0;
@@ -78,13 +80,31 @@ public class GameLogic extends Board{
 
     public void mouseClick(int mx, int my) {
 
-        if (mx > SQ_SIZE && mx < SQ_SIZE + 8 * SQ_SIZE && my > SQ_SIZE && my < SQ_SIZE + 8 * SQ_SIZE) {
-            mx = (mx - SQ_SIZE) / SQ_SIZE;
-            my = (my - SQ_SIZE) / SQ_SIZE;
+        if (!choose_piece) {
+            if (mx > SQ_SIZE && mx < SQ_SIZE + 8 * SQ_SIZE && my > SQ_SIZE && my < SQ_SIZE + 8 * SQ_SIZE) {
+                mx = (mx - SQ_SIZE) / SQ_SIZE;
+                my = (my - SQ_SIZE) / SQ_SIZE;
 
-            setXY(mx, my);
-            drawBoard();
+                setXY(mx, my);
+                drawBoard();
+                if (choose_piece) drawChooseBox(cur_player);
+            }
         }
+        else choosePiece(mx, my);
+    }
+
+    private void choosePiece(int mx, int my) {
+        if (mx < box_x || mx > box_x + BOX_W || my < box_y || my > box_y + SQ_SIZE) return;
+
+        mx = (mx - box_x) / SQ_SIZE;
+
+        board_table[GAME][x][y].piece = KNIGHT + mx;
+        choose_piece = false;
+        lookPlayerCheck();
+        clearBoard();
+
+        cur_player ^= 1;
+        drawBoard();
     }
 
     private void setXY(int x, int y) {
@@ -97,36 +117,7 @@ public class GameLogic extends Board{
 
         if (state) {
 
-            switch (board_table[GAME][this.x][this.y].piece) {
-                case PAWN:
-                    if (y == 7 * (cur_player ^ 1)) {
-                        board_table[GAME][this.x][this.y].piece = QUEEN;
-                    }
-                    break;
-
-                case ROCK:
-                    if (this.x == 0) rock_left_move[cur_player] = true;
-                    else if (this.x == 7) rock_right_move[cur_player] = true;
-                    break;
-
-                case KING:
-                    king_move[cur_player] = true;
-                    break;
-            }
-
-            if (board_table[GAME][x][y].piece > NONE) {
-                if (cur_player == WHITE) {
-                    piece[board_table[GAME][x][y].piece].draw(gc, SQ_SIZE - (SQ_SIZE / 8) + pieces_win[WHITE] * (SQ_SIZE / 4),
-                            SQ_SIZE * 9 + SQ_SIZE / 3, SQ_SIZE / 2, SQ_SIZE / 2, BLACK);
-                    ++pieces_win[WHITE];
-                }
-                else {
-                    ++pieces_win[BLACK];
-                    piece[board_table[GAME][x][y].piece].draw(gc, SQ_SIZE * 9 - pieces_win[BLACK] * (SQ_SIZE / 4) - (SQ_SIZE / 8),
-                            SQ_SIZE * 9 + SQ_SIZE / 3, SQ_SIZE / 2, SQ_SIZE / 2, WHITE);
-                }
-
-            }
+            removePiece(x, y);
 
             board_table[GAME][x][y].piece = board_table[GAME][this.x][this.y].piece;
             board_table[GAME][x][y].piece_color = cur_player;
@@ -135,79 +126,136 @@ public class GameLogic extends Board{
             this.x = x;
             this.y = y;
 
-            if (board_table[GAME][x][y].square_check == 3) {
-                int[] y_add = {-1, 1};
-                clearBoardPawn();
-                board_table[GAME][x][y + y_add[board_table[GAME][x][y].piece_color]].square_pawn = true;
-            }
-            else if (board_table[GAME][x][y].square_pawn && board_table[GAME][x][y].piece == PAWN) {
-                int[] y_add = {-1, 1};
-                board_table[GAME][x][y + y_add[board_table[GAME][x][y].piece_color]].piece = NONE;
-                board_table[GAME][x][y + y_add[board_table[GAME][x][y].piece_color]].piece_color = NONE;
-                clearBoardPawn();
-            }
-            else clearBoardPawn();
+            lookSpecialMoves();
+            lookPawnPassant();
+            lookPlayerCheck();
 
-            if (lookCheck(board_table[GAME][x][y].piece_color, GAME)) {
-                System.out.println("Check");
-                this.check = true;
-                escape_moves.clear();
-
-                if (lookMate(board_table[GAME][x][y].piece_color ^ 1)) {
-                    System.out.println("Checkmate!!");
-                }
-
-            }
-            else this.check = false;
-
-            if (board_table[GAME][x][y].square_check == 4) {
-
-                board_table[GAME][0][y].piece = NONE;
-                board_table[GAME][0][y].piece_color = NONE;
-                board_table[GAME][3][y].piece = ROCK;
-                board_table[GAME][3][y].piece_color = cur_player;
-            }
-            else if (board_table[GAME][x][y].square_check == 5) {
-
-                board_table[GAME][7][y].piece = NONE;
-                board_table[GAME][7][y].piece_color = NONE;
-                board_table[GAME][5][y].piece = ROCK;
-                board_table[GAME][5][y].piece_color = cur_player;
-            }
-
+            movePossibleCastling(x, y);
             clearBoard();
             this.state = false;
-            cur_player ^= 1;
+            if (!choose_piece) cur_player ^= 1;
         }
         else if (board_table[GAME][x][y].piece_color == cur_player) {
 
             board_table[GAME][x][y].square_check = 1;
-
-            if (this.check) {
-                for (int i = 0; i < escape_moves.size(); i++) {
-                    if (escape_moves.get(i).x == x && escape_moves.get(i).y == y) {
-                        board_table[GAME][escape_moves.get(i).x2][escape_moves.get(i).y2].square_check = 2;
-                    }
-                }
-            }
-            else {
-                piece[board_table[GAME][x][y].piece].lookMoves(board_table[GAME], x, y);
-
-                if (board_table[GAME][x][y].piece == KING && !king_move[cur_player]) {
-                    if (!rock_left_move[cur_player]) lookCastling(x, y, cur_player, 0);
-                    if (!rock_right_move[cur_player]) lookCastling(x, y, cur_player, 1);
-                }
-
-                removeIllegalMoves(x, y);
-            }
-
             this.x = x;
             this.y = y;
             this.state = true;
+            lookIllegalMoves();
         }
     }
 
-    private void lookCastling(int x, int y, int col, int type) {
+    private void lookPlayerCheck() {
+
+        if (lookCheck(board_table[GAME][x][y].piece_color, GAME)) {
+            System.out.println("Check");
+            this.check = true;
+            escape_moves.clear();
+
+            if (lookMate(board_table[GAME][x][y].piece_color ^ 1)) {
+                System.out.println("Checkmate!!");
+            }
+        }
+        else this.check = false;
+    }
+
+    private void removePiece(int x, int y) {
+
+        if (board_table[GAME][x][y].piece > NONE) {
+
+            if (cur_player == WHITE) {
+                piece[board_table[GAME][x][y].piece].draw(gc, SQ_SIZE - (SQ_SIZE / 8) + pieces_win[WHITE] * (SQ_SIZE / 4),
+                        SQ_SIZE * 9 + SQ_SIZE / 3, SQ_SIZE / 2, SQ_SIZE / 2, BLACK);
+                ++pieces_win[WHITE];
+            }
+            else {
+                ++pieces_win[BLACK];
+                piece[board_table[GAME][x][y].piece].draw(gc, SQ_SIZE * 9 - pieces_win[BLACK] * (SQ_SIZE / 4) - (SQ_SIZE / 8),
+                        SQ_SIZE * 9 + SQ_SIZE / 3, SQ_SIZE / 2, SQ_SIZE / 2, WHITE);
+            }
+
+            board_table[GAME][x][y].piece = NONE;
+            board_table[GAME][x][y].piece_color = NONE;
+        }
+    }
+
+    private void lookPawnPassant() {
+
+        if (board_table[GAME][x][y].square_check == 3) {
+            int[] y_add = {-1, 1};
+            clearBoardPawn();
+            board_table[GAME][x][y + y_add[cur_player]].square_pawn = true;
+        }
+        else if (board_table[GAME][x][y].square_pawn && board_table[GAME][x][y].piece == PAWN) {
+            int[] y_add = {-1, 1};
+            removePiece(x, y + y_add[cur_player]);
+            clearBoardPawn();
+        }
+        else clearBoardPawn();
+    }
+
+    private void lookIllegalMoves() {
+
+        if (this.check) {
+            for (Escape escape_move : escape_moves) {
+                if (escape_move.x == x && escape_move.y == y) {
+                    board_table[GAME][escape_move.x2][escape_move.y2].square_check = 2;
+                }
+            }
+        }
+        else {
+            piece[board_table[GAME][x][y].piece].lookMoves(board_table[GAME], x, y);
+
+            if (board_table[GAME][x][y].piece == KING && !king_move[cur_player]) {
+                if (!rock_left_move[cur_player]) lookCastling(x, y, cur_player, 0);
+                if (!rock_right_move[cur_player]) lookCastling(x, y, cur_player, 1);
+            }
+
+            removeIllegalMoves(x, y);
+        }
+    }
+
+    private void lookSpecialMoves() {
+
+        switch (board_table[GAME][x][y].piece) {
+            case PAWN:
+                if (y == 7 * (cur_player ^ 1)) {
+                    setChooseBoxXY(x, 1 + 5 * (cur_player ^ 1));
+                    this.choose_piece = true;
+                }
+                break;
+
+            case ROCK:
+                if (x == 0) rock_left_move[cur_player] = true;
+                else if (x == 7) rock_right_move[cur_player] = true;
+                break;
+
+            case KING:
+                king_move[cur_player] = true;
+                break;
+        }
+    }
+
+    private void movePossibleCastling(int x, int y) {
+
+        if (board_table[GAME][x][y].square_check == 4) {
+
+            board_table[GAME][0][y].piece = NONE;
+            board_table[GAME][0][y].piece_color = NONE;
+            board_table[GAME][3][y].piece = ROCK;
+            board_table[GAME][3][y].piece_color = cur_player;
+        }
+        else if (board_table[GAME][x][y].square_check == 5) {
+
+            board_table[GAME][7][y].piece = NONE;
+            board_table[GAME][7][y].piece_color = NONE;
+            board_table[GAME][5][y].piece = ROCK;
+            board_table[GAME][5][y].piece_color = cur_player;
+        }
+    }
+
+    private void lookCastling(int x, int y, int player, int type) {
+
         int x_add = 1;
         int x1 = x;
         int x2 = x + 2;
@@ -221,7 +269,7 @@ public class GameLogic extends Board{
             x4 = 0;
         }
 
-        if (board_table[GAME][x4][y].piece_color != cur_player) return;
+        if (board_table[GAME][x4][y].piece_color != player) return;
 
         while(x1 != x2) {
             x1 += x_add;
@@ -234,7 +282,7 @@ public class GameLogic extends Board{
         while(x1 != x3) {
             x1 += x_add;
             board_table[TEMP][x1][y].piece = KING;
-            board_table[TEMP][x1][y].piece_color = cur_player;
+            board_table[TEMP][x1][y].piece_color = player;
 
             if (lookCheck(cur_player ^ 1, TEMP)) return;
         }
@@ -314,11 +362,6 @@ public class GameLogic extends Board{
 
         board_table[GAME][x][y].piece = NONE;
         board_table[GAME][x][y].piece_color = NONE;
-
-        if (cur_piece != KING) {
-            copyBoard();
-            if (lookCheck(cur_color ^ 1, TEMP)) clearBoardIllegal();
-        }
 
         for (int yy = 0; yy < 8; yy++) {
             for (int xx = 0; xx < 8; xx++) {

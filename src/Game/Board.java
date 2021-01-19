@@ -14,12 +14,19 @@ public class Board extends VBox {
     protected GraphicsContext gc;
 
     static final int SQ_SIZE = 64;
+    static final int BOARD_X = SQ_SIZE - (SQ_SIZE / 8);
+    static final int BOARD_W = 8 * SQ_SIZE + SQ_SIZE / 4;
+    static final int BOX_W = 4 * SQ_SIZE;
+    static final int OVAL_SIZE = SQ_SIZE / 3;
+
     static final int DIF_PIECES = 6;
     static final int GAME = 0;
     static final int TEMP = 1;
 
     protected BoardTable[][][] board_table;
     protected final Piece[] piece = new Piece[DIF_PIECES];
+    protected int box_x;
+    protected int box_y;
 
     public static class BoardTable {
         public boolean square_pawn;
@@ -150,11 +157,34 @@ public class Board extends VBox {
         }
     }
 
+    protected void setChooseBoxXY(int x, int y) {
+
+        x = BOARD_X + x * SQ_SIZE + (SQ_SIZE / 2) - (SQ_SIZE * 2);
+        y = BOARD_X + y * SQ_SIZE + SQ_SIZE / 8;
+
+        if (x < BOARD_X + SQ_SIZE / 8) x = BOARD_X + SQ_SIZE / 8;
+        else if (x + BOX_W + SQ_SIZE / 4 > BOARD_X + BOARD_W) x = (BOARD_X + BOARD_W) - (BOX_W + SQ_SIZE / 4);
+
+        box_x = x;
+        box_y = y;
+    }
+
+    protected void drawChooseBox(int col) {
+        gc.setFill(Color.GRAY);
+        gc.fillRect(box_x - SQ_SIZE / 8, box_y - SQ_SIZE / 8, BOX_W + SQ_SIZE / 4, SQ_SIZE + SQ_SIZE / 4);
+
+        gc.setFill(Color.GOLD);
+        gc.fillRect(box_x, box_y, BOX_W, SQ_SIZE);
+
+        for (int i = 0; i < 4; i++) {
+            piece[KNIGHT + i].draw(gc, box_x + SQ_SIZE * i, box_y, SQ_SIZE, SQ_SIZE, col);
+        }
+    }
+
     protected void drawBoard() {
 
         gc.setFill(Color.GOLD);
-        gc.fillRect(SQ_SIZE - (SQ_SIZE / 8), SQ_SIZE - (SQ_SIZE / 8),
-                    8 * SQ_SIZE + SQ_SIZE / 4, 8 * SQ_SIZE + SQ_SIZE / 4);
+        gc.fillRect(BOARD_X, BOARD_X, BOARD_W, BOARD_W);
 
         Color[]  color = {Color.GOLDENROD, Color.BROWN};
         int col = 1;
@@ -182,11 +212,11 @@ public class Board extends VBox {
 
                 if (board_table[GAME][x][y].square_check > 3) {
                     gc.setFill(Color.BLUE);
-                    gc.fillOval(xx + SQ_SIZE / 3, yy + SQ_SIZE / 3, SQ_SIZE / 3, SQ_SIZE / 3);
+                    gc.fillOval(xx + OVAL_SIZE, yy + OVAL_SIZE, OVAL_SIZE, OVAL_SIZE);
                 }
                 else if (board_table[GAME][x][y].square_check > 1) {
                     gc.setFill(Color.GREEN);
-                    gc.fillOval(xx + SQ_SIZE / 3, yy + SQ_SIZE / 3, SQ_SIZE / 3, SQ_SIZE / 3);
+                    gc.fillOval(xx + OVAL_SIZE, yy + OVAL_SIZE, OVAL_SIZE, OVAL_SIZE);
                 }
 
                 col ^= 1;

@@ -14,7 +14,7 @@ public class Game extends Application {
         GameLogic logic = new GameLogic();
         mainPane.setLeft(logic.canvas);
 
-        Scene game_scene = new Scene(mainPane,Board.SQ_SIZE * 12,Board.SQ_SIZE * 10);
+        Scene game_scene = new Scene(mainPane,Board.SQ_SIZE * 14,Board.SQ_SIZE * 10);
 
         primaryStage.setScene(game_scene);
         primaryStage.setTitle("Chess");
