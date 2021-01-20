@@ -46,7 +46,7 @@ public class Computer {
         move_counter = 0;
         best_value = -1000;
         temp_value = 0;
-        initial_deep = 4;
+        initial_deep = 3;
 
         calc_move.clear();
 
@@ -79,7 +79,6 @@ public class Computer {
                         if (deep == initial_deep) {
                             move[0].x = x;
                             move[0].y = y;
-                            //move[1].piece = best_value;
                             temp_value = 0;
                         }
                         testMoves(temp_board, temp_rules, x, y, deep - 1);
@@ -119,11 +118,17 @@ public class Computer {
                     logic.movePossibleCastling(temp_board, temp_rules, x, y);
                     logic.clearBoard(temp_board);
 
+                    if (temp_rules.choose_piece)
+                    {
+                        temp_board[x][y].piece = QUEEN;
+                        temp_rules.choose_piece = false;
+                    }
+
                     countPositionValue(temp_board, temp_rules, x, y, deep);
 
                     temp_rules.cur_player ^= 1;
                     if (deep > 0 && !temp_rules.checkmate) calculateMove(temp_board, temp_rules, deep);
-                        else calc_move.add(move[1]);
+                        //else calc_move.add(move[1]);
                 }
             }
         }
@@ -146,14 +151,24 @@ public class Computer {
 
         value += piece1 - piece2;
 
-        /*if (rules.check) {
-            if (rules.cur_player == logic.rules.cur_player) value += 2;
-            //else value -= 8;
+        /*if (rules.check && !rules.checkmate) {
+            if (rules.cur_player == logic.rules.cur_player) {
+                int temp_best = best_value;
+                best_value = value;
+                calculateMove(table, rules, 1);
+                if (best_value > value) {
+                    value -= 10;
+                }
+                else value += 10;
+
+                best_value = temp_best;
+            }
+            else value -= 10;
         }*/
 
         if (rules.checkmate) {
             if (rules.cur_player == logic.rules.cur_player) value += 8;
-            //else value -= 50;
+              else value -= 8;
         }
 
         return value;
@@ -161,7 +176,7 @@ public class Computer {
 
     private void countPositionValue(BoardTable[][] table, LogicRules rules, int xx, int yy, int deep) {
 
-        temp_value += countValue(table, rules);
+        temp_value = countValue(table, rules);
 
         if (deep == 0 || rules.checkmate) {
             if (temp_value > best_value || (temp_value == best_value && rnd.nextBoolean())) {

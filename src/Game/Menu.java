@@ -48,7 +48,7 @@ public class Menu extends Pane {
 
         text = new MenuText[3];
         text[0] = new MenuText("Start Game", 224);
-        text[1] = new MenuText("Level: Easy", 272);
+        text[1] = new MenuText("Opponent: Computer", 272);
         text[2] = new MenuText("Exit", 320);
 
         addEventFilter(MouseEvent.MOUSE_MOVED, event -> {

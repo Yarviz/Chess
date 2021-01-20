@@ -172,7 +172,13 @@ public class Game extends GameLogic {
         clearBoard(board_table);
 
         rules.cur_player ^= 1;
-        drawBoard();
+
+        if (rules.cur_player == BLACK && !rules.checkmate) {
+            drawBoard();
+            drawText("Computer Turn");
+
+            setComputerTimer();
+        }
     }
 
     private void setTimer() {
@@ -226,7 +232,7 @@ public class Game extends GameLogic {
             this.x = x;
             this.y = y;
 
-            if (rules.cur_player == BLACK && !rules.checkmate) {
+            if (rules.cur_player == BLACK && !rules.checkmate && !rules.choose_piece) {
                 drawBoard();
                 drawText("Computer Turn");
 
@@ -261,6 +267,12 @@ public class Game extends GameLogic {
             moves.get(replay_count - 1).piece = KING + 3 + rules.cur_player;
         }
 
+        if (rules.choose_piece && rules.cur_player == BLACK)
+        {
+            board_table[x2][y2].piece = QUEEN;
+            rules.choose_piece = false;
+        }
+
         lookPlayerCheck(board_table, rules, x2, y2);
 
         int castling = movePossibleCastling(board_table, rules, x2, y2);
@@ -271,7 +283,8 @@ public class Game extends GameLogic {
 
         this.state = false;
 
-        if (!rules.choose_piece) rules.cur_player ^= 1;
+        if (!rules.choose_piece && !rules.checkmate) rules.cur_player ^= 1;
+
         if (rules.check) {
             if (!rules.checkmate) {
                 drawText("Check");
