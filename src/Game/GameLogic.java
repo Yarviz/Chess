@@ -6,20 +6,18 @@ import static Piece.Piece.*;
 
 public class GameLogic extends Board {
 
-    protected int cur_player;
-
-
     private BoardTable[][] temp_board;
     protected LogicRules rules;
 
     public static class LogicRules {
+        public int cur_player;
         public boolean check;
         public boolean checkmate;
         public boolean choose_piece;
         public final boolean[] king_move;
         public final boolean[] rook_left_move;
         public final boolean[] rook_right_move;
-        public final Vector<Move> escape_moves;
+        public Vector<Move> escape_moves;
 
         LogicRules() {
             this.escape_moves = new Vector<>(16);
@@ -29,6 +27,7 @@ public class GameLogic extends Board {
         }
 
         public void initRules() {
+            this.cur_player = WHITE;
             this.choose_piece = false;
             this.king_move[WHITE] = false;
             this.king_move[BLACK] = false;
@@ -38,6 +37,21 @@ public class GameLogic extends Board {
             this.rook_right_move[BLACK] = false;
             this.check = false;
             this.checkmate = false;
+            this.escape_moves.clear();
+        }
+
+        public void copyRules(LogicRules src) {
+            this.cur_player = src.cur_player;
+            this.choose_piece = src.choose_piece;
+            this.king_move[WHITE] = src.king_move[WHITE];
+            this.king_move[BLACK] = src.king_move[BLACK];
+            this.rook_left_move[WHITE] = src.rook_left_move[WHITE];
+            this.rook_left_move[BLACK] = src.rook_left_move[BLACK];
+            this.rook_right_move[WHITE] = src.rook_right_move[WHITE];
+            this.rook_right_move[BLACK] = src.rook_right_move[BLACK];
+            this.check = src.check;
+            this.checkmate = src.checkmate;
+            this.escape_moves = new Vector<>(src.escape_moves);
         }
     }
 
@@ -69,7 +83,6 @@ public class GameLogic extends Board {
 
     protected void initLogic() {
 
-        this.cur_player = WHITE;
         rules.initRules();
     }
 
@@ -77,42 +90,48 @@ public class GameLogic extends Board {
 
         switch (table[x][y].piece) {
             case PAWN:
-                if (y == 7 * (cur_player ^ 1)) {
-                    setChooseBoxXY(x, 1 + 5 * (cur_player ^ 1));
+                if (y == 7 * (rules.cur_player ^ 1)) {
+                    setChooseBoxXY(x, 1 + 5 * (rules.cur_player ^ 1));
                     rules.choose_piece = true;
                 }
                 break;
 
             case ROOK:
-                if (x == 0) rules.rook_left_move[cur_player] = true;
-                else if (x == 7) rules.rook_right_move[cur_player] = true;
+                if (x == 0) rules.rook_left_move[rules.cur_player] = true;
+                else if (x == 7) rules.rook_right_move[rules.cur_player] = true;
                 break;
 
             case KING:
-                rules.king_move[cur_player] = true;
+                rules.king_move[rules.cur_player] = true;
                 break;
         }
     }
 
-    protected void lookMoves(BoardTable[][] table, LogicRules rules, int x, int y) {
+    protected boolean lookMoves(BoardTable[][] table, LogicRules rules, int x, int y) {
+
+        boolean moves = false;
 
         if (rules.check) {
             for (Move escape_move : rules.escape_moves) {
                 if (escape_move.x == x && escape_move.y == y) {
                     table[escape_move.x2][escape_move.y2].square_check = 2;
+                    moves = true;
                 }
             }
+            //System.out.println(rules.escape_moves.size());
         }
         else {
             piece[table[x][y].piece].lookMoves(table, x, y);
 
-            if (table[x][y].piece == KING && !rules.king_move[cur_player]) {
-                if (!rules.rook_left_move[cur_player]) lookCastling(table, rules, x, y, cur_player, 0);
-                if (!rules.rook_right_move[cur_player]) lookCastling(table, rules, x, y, cur_player, 1);
+            if (table[x][y].piece == KING && !rules.king_move[rules.cur_player]) {
+                if (!rules.rook_left_move[rules.cur_player]) lookCastling(table, rules, x, y, rules.cur_player, 0);
+                if (!rules.rook_right_move[rules.cur_player]) lookCastling(table, rules, x, y, rules.cur_player, 1);
             }
 
-            removeIllegalMoves(table, x, y);
+            moves = removeIllegalMoves(table,rules, x, y);
         }
+
+        return moves;
     }
 
     protected boolean lookPawnPassant(BoardTable[][] table, LogicRules rules, int x, int y) {
@@ -120,12 +139,12 @@ public class GameLogic extends Board {
         if (table[x][y].square_check == 3) {
             int[] y_add = {-1, 1};
             clearBoardPawn(table);
-            table[x][y + y_add[cur_player]].square_pawn = true;
+            table[x][y + y_add[rules.cur_player]].square_pawn = true;
         }
         else if (table[x][y].square_pawn && table[x][y].piece == PAWN) {
             int[] y_add = {-1, 1};
-            table[x][y + y_add[cur_player]].piece = NONE;
-            table[x][y + y_add[cur_player]].piece_color = NONE;
+            table[x][y + y_add[rules.cur_player]].piece = NONE;
+            table[x][y + y_add[rules.cur_player]].piece_color = NONE;
             clearBoardPawn(table);
             return true;
         }
@@ -143,7 +162,7 @@ public class GameLogic extends Board {
             table[0][y].piece = NONE;
             table[0][y].piece_color = NONE;
             table[3][y].piece = ROOK;
-            table[3][y].piece_color = cur_player;
+            table[3][y].piece_color = rules.cur_player;
             castling = 1;
         }
         else if (board_table[x][y].square_check == 5) {
@@ -151,7 +170,7 @@ public class GameLogic extends Board {
             table[7][y].piece = NONE;
             table[7][y].piece_color = NONE;
             table[5][y].piece = ROOK;
-            table[5][y].piece_color = cur_player;
+            table[5][y].piece_color = rules.cur_player;
             castling = 2;
         }
 
@@ -196,12 +215,12 @@ public class GameLogic extends Board {
 
     protected void lookPlayerCheck(BoardTable[][] table, LogicRules rules, int x, int y) {
 
-        if (lookCheck(table, rules, table[x][y].piece_color)) {
+        if (lookCheck(table, rules, rules.cur_player)) {
             //System.out.println("Check");
             rules.check = true;
             rules.escape_moves.clear();
 
-            if (lookMate(table, rules,table[x][y].piece_color ^ 1)) {
+            if (lookMate(table, rules,rules.cur_player ^ 1)) {
                 //System.out.println("Checkmate!!");
                 rules.checkmate = true;
             }
@@ -275,9 +294,10 @@ public class GameLogic extends Board {
         return escape;
     }
 
-    protected void removeIllegalMoves(BoardTable[][] table, int x, int y) {
+    protected boolean removeIllegalMoves(BoardTable[][] table, LogicRules rules, int x, int y) {
         int cur_piece = table[x][y].piece;
         int cur_color = table[x][y].piece_color;
+        boolean moves = false;
 
         table[x][y].piece = NONE;
         table[x][y].piece_color = NONE;
@@ -285,20 +305,23 @@ public class GameLogic extends Board {
         for (int yy = 0; yy < 8; yy++) {
             for (int xx = 0; xx < 8; xx++) {
 
-                if (table[xx][yy].square_check > 1 && (table[xx][yy].piece > NONE || cur_piece == KING)) {
+                if (table[xx][yy].square_check > 1) {
 
-                    copyBoard(board_table, temp_board);
+                    copyBoard(table, temp_board);
                     temp_board[xx][yy].piece = cur_piece;
                     temp_board[xx][yy].piece_color = cur_color;
 
-                    if (lookCheck(temp_board,rules,cur_color ^ 1)) {
+                    if (lookCheck(temp_board, rules,cur_color ^ 1)) {
                         table[xx][yy].square_check = 0;
                     }
+                    else moves = true;
                 }
             }
         }
 
         table[x][y].piece = cur_piece;
         table[x][y].piece_color = cur_color;
+
+        return moves;
     }
 }

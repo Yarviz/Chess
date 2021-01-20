@@ -95,7 +95,7 @@ public class Game extends GameLogic {
                 my = (my - SQ_SIZE) / SQ_SIZE;
 
                 setXY(mx, my);
-                if (rules.choose_piece) drawChooseBox(cur_player);
+                if (rules.choose_piece) drawChooseBox(rules.cur_player);
             }
         }
         else choosePiece(mx, my);
@@ -171,7 +171,7 @@ public class Game extends GameLogic {
         lookPlayerCheck(board_table, rules, x, y);
         clearBoard(board_table);
 
-        cur_player ^= 1;
+        rules.cur_player ^= 1;
         drawBoard();
     }
 
@@ -182,6 +182,16 @@ public class Game extends GameLogic {
                 drawBoard();
             }
         }, 3000);
+    }
+
+    private void setComputerTimer() {
+        checkTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Move ai_move = ai.makeMove(rules.cur_player);
+                makeMove(ai_move.x, ai_move.y, ai_move.x2, ai_move.y2);
+            }
+        }, 50);
     }
 
     private void addMove(int x, int y, int x2, int y2) {
@@ -201,6 +211,7 @@ public class Game extends GameLogic {
     }
 
     private void setXY(int x, int y) {
+
         if (!state && board_table[x][y].piece == -1) return;
 
         if (board_table[x][y].square_check < 2 && state) {
@@ -211,45 +222,18 @@ public class Game extends GameLogic {
 
         if (state) {
 
-            removePiece(x, y);
-            addMove(this.x, this.y, x, y);
-
-            board_table[x][y].piece = board_table[this.x][this.y].piece;
-            board_table[x][y].piece_color = cur_player;
-            board_table[this.x][this.y].piece = NONE;
-            board_table[this.x][this.y].piece_color = NONE;
+            makeMove(this.x, this.y, x, y);
             this.x = x;
             this.y = y;
 
-            lookSpecialMoves(board_table, rules, x, y);
-            if (lookPawnPassant(board_table, rules, x, y)) {
-                addPiece(PAWN, cur_player ^ 1);
-                moves.get(replay_count - 1).piece = KING + 3 + cur_player;
-            }
+            if (rules.cur_player == BLACK && !rules.checkmate) {
+                drawBoard();
+                drawText("Computer Turn");
 
-            lookPlayerCheck(board_table, rules, x, y);
-
-            int castling = movePossibleCastling(board_table, rules, x, y);
-            if (castling > 0) moves.get(replay_count - 1).piece = castling + 1;
-
-            clearBoard(board_table);
-            drawBoard();
-
-            this.state = false;
-
-            if (!rules.choose_piece) cur_player ^= 1;
-            if (rules.check) {
-                if (!rules.checkmate) {
-                    drawText("Check");
-                    setTimer();
-                }
-                else {
-                    drawText("Checkmate");
-                    parent.gameEnded("Replay Game");
-                }
+                setComputerTimer();
             }
         }
-        else if (board_table[x][y].piece_color == cur_player) {
+        else if (board_table[x][y].piece_color == rules.cur_player) {
 
             board_table[x][y].square_check = 1;
             this.x = x;
@@ -258,6 +242,45 @@ public class Game extends GameLogic {
 
             lookMoves(board_table, rules, x, y);
             drawBoard();
+        }
+    }
+
+    private void makeMove(int x, int y, int x2, int y2) {
+
+        removePiece(x2, y2);
+        addMove(x, y, x2, y2);
+
+        board_table[x2][y2].piece = board_table[x][y].piece;
+        board_table[x2][y2].piece_color = rules.cur_player;
+        board_table[x][y].piece = NONE;
+        board_table[x][y].piece_color = NONE;
+
+        lookSpecialMoves(board_table, rules, x2, y2);
+        if (lookPawnPassant(board_table, rules, x2, y2)) {
+            addPiece(PAWN, rules.cur_player ^ 1);
+            moves.get(replay_count - 1).piece = KING + 3 + rules.cur_player;
+        }
+
+        lookPlayerCheck(board_table, rules, x2, y2);
+
+        int castling = movePossibleCastling(board_table, rules, x2, y2);
+        if (castling > 0) moves.get(replay_count - 1).piece = castling + 1;
+
+        clearBoard(board_table);
+        drawBoard();
+
+        this.state = false;
+
+        if (!rules.choose_piece) rules.cur_player ^= 1;
+        if (rules.check) {
+            if (!rules.checkmate) {
+                drawText("Check");
+                setTimer();
+            }
+            else {
+                drawText("Checkmate");
+                parent.gameEnded("Replay Game");
+            }
         }
     }
 
