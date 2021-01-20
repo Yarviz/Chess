@@ -13,17 +13,14 @@ import Game.Game;
 
 public class Chess extends Application {
 
-    private HBox gamePane;
-    private VBox infoPane;
-    private HBox buttonPane;
     private Game game;
+    private Menu menu;
+
     private Button menuButton;
     private Button replayButton;
     private Scene game_scene;
     private Scene menu_scene;
     private Stage stage;
-
-    private Menu menu;
 
     @Override
     public void start(Stage primaryStage) {
@@ -32,9 +29,10 @@ public class Chess extends Application {
 
         primaryStage.setOnCloseRequest(event -> System.exit(0));
 
-        gamePane = new HBox();
-        infoPane = new VBox();
-        buttonPane = new HBox();
+        HBox gamePane = new HBox();
+        VBox infoPane = new VBox();
+        HBox buttonPane = new HBox();
+
         game = new Game(this);
 
         menuButton = new Button();

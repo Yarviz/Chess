@@ -19,6 +19,7 @@ public class Game extends GameLogic {
     private final int[] pieces_win;
     private int replay_count;
     private boolean state;
+    private Computer ai;
 
     private enum GameType {
         PLAY,
@@ -45,7 +46,7 @@ public class Game extends GameLogic {
         infoText.setWrapText(true);
 
         canvas.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
-            if (checkmate || game_state == GameType.REPLAY) return;
+            if (rules.checkmate || game_state == GameType.REPLAY) return;
             mouseClick((int)(event.getSceneX() - canvas.getLayoutX()),
                            (int)(event.getSceneY() - canvas.getLayoutY()));
         });
@@ -64,6 +65,7 @@ public class Game extends GameLogic {
         this.game_state = GameType.PLAY;
         this.replay_count = 0;
         this.infoText.clear();
+        this.ai = new Computer(getLogic());
 
         initLogic();
         initBoard();
@@ -87,13 +89,13 @@ public class Game extends GameLogic {
 
     public void mouseClick(int mx, int my) {
 
-        if (!choose_piece) {
+        if (!rules.choose_piece) {
             if (mx > SQ_SIZE && mx < SQ_SIZE + 8 * SQ_SIZE && my > SQ_SIZE && my < SQ_SIZE + 8 * SQ_SIZE) {
                 mx = (mx - SQ_SIZE) / SQ_SIZE;
                 my = (my - SQ_SIZE) / SQ_SIZE;
 
                 setXY(mx, my);
-                if (choose_piece) drawChooseBox(cur_player);
+                if (rules.choose_piece) drawChooseBox(cur_player);
             }
         }
         else choosePiece(mx, my);
@@ -112,23 +114,23 @@ public class Game extends GameLogic {
         int y2 = moves.get(replay_count).y2;
         int pcs = moves.get(replay_count).piece;
 
-        board_table[GAME][x][y].piece = NONE;
+        board_table[x][y].piece = NONE;
 
         switch(pcs) {
 
             case (KING + 1):
-                board_table[GAME][0][y].piece = NONE;
-                board_table[GAME][0][y].piece = NONE;
-                board_table[GAME][3][y].piece = ROOK;
-                board_table[GAME][3][y].piece_color = (replay_count + 1) % 2;
+                board_table[0][y].piece = NONE;
+                board_table[0][y].piece = NONE;
+                board_table[3][y].piece = ROOK;
+                board_table[3][y].piece_color = (replay_count + 1) % 2;
                 pcs = KING;
                 break;
 
             case (KING + 2):
-                board_table[GAME][7][y].piece = NONE;
-                board_table[GAME][7][y].piece = NONE;
-                board_table[GAME][5][y].piece = ROOK;
-                board_table[GAME][5][y].piece_color = (replay_count + 1) % 2;
+                board_table[7][y].piece = NONE;
+                board_table[7][y].piece = NONE;
+                board_table[5][y].piece = ROOK;
+                board_table[5][y].piece_color = (replay_count + 1) % 2;
                 pcs = KING;
                 break;
 
@@ -146,8 +148,8 @@ public class Game extends GameLogic {
                 removePiece(x2, y2);
         }
 
-        board_table[GAME][x2][y2].piece = pcs;
-        board_table[GAME][x2][y2].piece_color = (replay_count + 1) % 2;
+        board_table[x2][y2].piece = pcs;
+        board_table[x2][y2].piece_color = (replay_count + 1) % 2;
 
         addMove(x, y, x2, y2);
         drawBoard();
@@ -163,11 +165,11 @@ public class Game extends GameLogic {
 
         mx = (mx - box_x) / SQ_SIZE;
 
-        board_table[GAME][x][y].piece = KNIGHT + mx;
+        board_table[x][y].piece = KNIGHT + mx;
         moves.get(replay_count - 1).piece = KNIGHT + mx;
-        choose_piece = false;
-        lookPlayerCheck(x, y);
-        clearBoard();
+        rules.choose_piece = false;
+        lookPlayerCheck(board_table, rules, x, y);
+        clearBoard(board_table);
 
         cur_player ^= 1;
         drawBoard();
@@ -191,7 +193,7 @@ public class Game extends GameLogic {
         infoText.appendText(text);
 
         if (game_state == GameType.PLAY){
-            Move mov = new Move(x, y, x2, y2, board_table[GAME][this.x][this.y].piece);
+            Move mov = new Move(x, y, x2, y2, board_table[this.x][this.y].piece);
             moves.add(mov);
         }
 
@@ -199,10 +201,10 @@ public class Game extends GameLogic {
     }
 
     private void setXY(int x, int y) {
-        if (!state && board_table[GAME][x][y].piece == -1) return;
+        if (!state && board_table[x][y].piece == -1) return;
 
-        if (board_table[GAME][x][y].square_check < 2 && state) {
-            clearBoard();
+        if (board_table[x][y].square_check < 2 && state) {
+            clearBoard(board_table);
             drawBoard();
             this.state = false;
         }
@@ -212,32 +214,32 @@ public class Game extends GameLogic {
             removePiece(x, y);
             addMove(this.x, this.y, x, y);
 
-            board_table[GAME][x][y].piece = board_table[GAME][this.x][this.y].piece;
-            board_table[GAME][x][y].piece_color = cur_player;
-            board_table[GAME][this.x][this.y].piece = NONE;
-            board_table[GAME][this.x][this.y].piece_color = NONE;
+            board_table[x][y].piece = board_table[this.x][this.y].piece;
+            board_table[x][y].piece_color = cur_player;
+            board_table[this.x][this.y].piece = NONE;
+            board_table[this.x][this.y].piece_color = NONE;
             this.x = x;
             this.y = y;
 
-            lookSpecialMoves(x, y);
-            if (lookPawnPassant(x, y)) {
+            lookSpecialMoves(board_table, rules, x, y);
+            if (lookPawnPassant(board_table, rules, x, y)) {
                 addPiece(PAWN, cur_player ^ 1);
                 moves.get(replay_count - 1).piece = KING + 3 + cur_player;
             }
 
-            lookPlayerCheck(x, y);
+            lookPlayerCheck(board_table, rules, x, y);
 
-            int castling = movePossibleCastling(x, y);
+            int castling = movePossibleCastling(board_table, rules, x, y);
             if (castling > 0) moves.get(replay_count - 1).piece = castling + 1;
 
-            clearBoard();
+            clearBoard(board_table);
             drawBoard();
 
             this.state = false;
 
-            if (!choose_piece) cur_player ^= 1;
-            if (check) {
-                if (!checkmate) {
+            if (!rules.choose_piece) cur_player ^= 1;
+            if (rules.check) {
+                if (!rules.checkmate) {
                     drawText("Check");
                     setTimer();
                 }
@@ -247,25 +249,25 @@ public class Game extends GameLogic {
                 }
             }
         }
-        else if (board_table[GAME][x][y].piece_color == cur_player) {
+        else if (board_table[x][y].piece_color == cur_player) {
 
-            board_table[GAME][x][y].square_check = 1;
+            board_table[x][y].square_check = 1;
             this.x = x;
             this.y = y;
             this.state = true;
 
-            lookIllegalMoves(x, y);
+            lookMoves(board_table, rules, x, y);
             drawBoard();
         }
     }
 
     private void removePiece(int x, int y) {
 
-        if (board_table[GAME][x][y].piece > NONE) {
+        if (board_table[x][y].piece > NONE) {
 
-            addPiece(board_table[GAME][x][y].piece, board_table[GAME][x][y].piece_color);
-            board_table[GAME][x][y].piece_color = NONE;
-            board_table[GAME][x][y].piece = NONE;
+            addPiece(board_table[x][y].piece, board_table[x][y].piece_color);
+            board_table[x][y].piece_color = NONE;
+            board_table[x][y].piece = NONE;
         }
     }
 

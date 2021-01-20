@@ -23,7 +23,7 @@ public class King extends Piece {
                     board[x + xy_add[i][0]][y + xy_add[i][1]].square_check = 2;
 
                     if (board[x + xy_add[i][0]][y + xy_add[i][1]].piece == KING) {
-                        board[x][y].square_checkmate = true;
+                        //board[x][y].square_checkmate = true;
                         checkmate = true;
                     }
                 }

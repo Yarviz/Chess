@@ -31,7 +31,7 @@ public class Pawn extends Piece {
                 board[x - 1][y + y_add].square_check = 2;
 
                 if (board[x - 1][y + y_add].piece == KING) {
-                    board[x][y].square_checkmate = true;
+                    //board[x][y].square_checkmate = true;
                     checkmate = true;
                 }
             }
@@ -43,7 +43,7 @@ public class Pawn extends Piece {
                 board[x + 1][y + y_add].square_check = 2;
 
                 if (board[x + 1][y + y_add].piece == KING) {
-                    board[x][y].square_checkmate = true;
+                    //board[x][y].square_checkmate = true;
                     checkmate = true;
                 }
             }
@@ -54,8 +54,8 @@ public class Pawn extends Piece {
                 board[x][y + (y_add << 1)].square_check = 3;
 
                 if (board[x][y + (y_add << 1)].piece == KING) {
-                    board[x][y].square_checkmate = true;
-                    board[x][y + y_add].square_checkmate = true;
+                    //board[x][y].square_checkmate = true;
+                    //board[x][y + y_add].square_checkmate = true;
                     checkmate = true;
                 }
             }

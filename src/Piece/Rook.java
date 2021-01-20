@@ -39,7 +39,7 @@ public class Rook extends Piece {
                         while(xx2 != x || yy2 != y) {
                             xx2 -= xy_add[i][0];
                             yy2 -= xy_add[i][1];
-                            board[xx2][yy2].square_checkmate = true;
+                            //board[xx2][yy2].square_checkmate = true;
                         }
                         checkmate = true;
                     }

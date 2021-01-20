@@ -24,21 +24,21 @@ public class Board {
     static final int GAME = 0;
     static final int TEMP = 1;
 
-    protected BoardTable[][][] board_table;
+    protected BoardTable[][] board_table;
     protected final Piece[] piece = new Piece[DIF_PIECES];
     protected int box_x;
     protected int box_y;
 
     public static class BoardTable {
         public boolean square_pawn;
-        public boolean square_checkmate;
+        //public boolean square_checkmate;
         public int square_check;
         public int piece;
         public int piece_color;
 
         BoardTable() {
             this.square_pawn = false;
-            this.square_checkmate = false;
+            //this.square_checkmate = false;
             this.square_check = 0;
             this.piece_color = NONE;
             this.piece = NONE;
@@ -60,19 +60,13 @@ public class Board {
         piece[QUEEN] = new Queen();
         piece[KING] = new King();
 
-        board_table = new BoardTable[2][8][8];
-
-        for (int y = 0; y < 8; y++) {
-            for (int x = 0; x < 8; x++) {
-                board_table[GAME][x][y] = new BoardTable();
-                board_table[TEMP][x][y] = new BoardTable();
-            }
-        }
+        board_table = new BoardTable[8][8];
+        newBoard(board_table);
     }
 
     protected void initBoard() {
-        clearBoard();
-        clearBoardPieces();
+        clearBoard(board_table);
+        clearBoardPieces(board_table);
 
         int[] black_pcs = {ROOK, KNIGHT, BISHOP, QUEEN, KING, BISHOP, KNIGHT, ROOK,
                            PAWN, PAWN  , PAWN  , PAWN , PAWN, PAWN  , PAWN  , PAWN};
@@ -84,11 +78,11 @@ public class Board {
         int y = 0;
 
         for (int i = 0; i < 16; i++) {
-            board_table[GAME][x][y].piece = black_pcs[i];
-            board_table[GAME][x][y].piece_color = BLACK;
+            board_table[x][y].piece = black_pcs[i];
+            board_table[x][y].piece_color = BLACK;
 
-            board_table[GAME][x][y + 6].piece = white_pcs[i];
-            board_table[GAME][x][y + 6].piece_color = WHITE;
+            board_table[x][y + 6].piece = white_pcs[i];
+            board_table[x][y + 6].piece_color = WHITE;
 
             if (++x == 8) {
                 x = 0;
@@ -109,51 +103,61 @@ public class Board {
         }
     }
 
-    protected void clearBoard() {
-        for (int y = 0; y < 8; y++)
-        {
+    protected void newBoard(BoardTable[][] table) {
+        for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
-                board_table[GAME][x][y].square_check = 0;
+                table[x][y] = new BoardTable();
             }
         }
     }
 
-    protected void clearBoardPieces() {
-        for (int y = 0; y < 8; y++)
-        {
+    protected void clearBoard(BoardTable[][] table) {
+        for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
-                board_table[GAME][x][y].piece = NONE;
-                board_table[GAME][x][y].piece_color = NONE;
+                table[x][y].square_check = 0;
             }
         }
     }
 
-    protected void clearBoardPawn() {
-        for (int y = 0; y < 8; y++)
-        {
+    protected void clearBoardPieces(BoardTable[][] table) {
+        for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
-                board_table[GAME][x][y].square_pawn = false;
+                table[x][y].piece = NONE;
+                table[x][y].piece_color = NONE;
             }
         }
     }
 
-    protected void clearBoardCheckMate(int table) {
+    protected void clearBoardPawn(BoardTable[][] table) {
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                table[x][y].square_pawn = false;
+            }
+        }
+    }
+
+    /*protected void clearBoardCheckMate(int table) {
         for (int y = 0; y < 8; y++)
         {
             for (int x = 0; x < 8; x++) {
                 board_table[table][x][y].square_checkmate = false;
             }
         }
-    }
+    }*/
 
-    protected void copyBoard() {
+    protected void copyBoard(BoardTable[][] src, BoardTable[][] dest) {
         for (int y = 0; y < 8; y++)
         {
             for (int x = 0; x < 8; x++) {
-                board_table[TEMP][x][y].square_checkmate = board_table[GAME][x][y].square_checkmate;
-                board_table[TEMP][x][y].square_check = board_table[GAME][x][y].square_check;
-                board_table[TEMP][x][y].piece = board_table[GAME][x][y].piece;
-                board_table[TEMP][x][y].piece_color = board_table[GAME][x][y].piece_color;
+                /*board_table[TEMP][x][y].square_checkmate = board_table[x][y].square_checkmate;
+                board_table[TEMP][x][y].square_check = board_table[x][y].square_check;
+                board_table[TEMP][x][y].piece = board_table[x][y].piece;
+                board_table[TEMP][x][y].piece_color = board_table[x][y].piece_color;*/
+
+                dest[x][y].square_pawn = src[x][y].square_pawn;
+                dest[x][y].square_check = src[x][y].square_check;
+                dest[x][y].piece = src[x][y].piece;
+                dest[x][y].piece_color = src[x][y].piece_color;
             }
         }
     }
@@ -204,7 +208,7 @@ public class Board {
         {
             for (int x = 0; x < 8; x++)
             {
-                if (board_table[GAME][x][y].square_check == 1) {
+                if (board_table[x][y].square_check == 1) {
                     gc.setFill(Color.GRAY);
                     gc.fillRect(xx, yy, SQ_SIZE, SQ_SIZE);
                     gc.setFill(color[col]);
@@ -215,15 +219,15 @@ public class Board {
                     gc.fillRect(xx, yy, SQ_SIZE, SQ_SIZE);
                 }
 
-                if (board_table[GAME][x][y].piece > NONE) {
-                    piece[board_table[GAME][x][y].piece].draw(gc, xx, yy, SQ_SIZE, SQ_SIZE, board_table[GAME][x][y].piece_color);
+                if (board_table[x][y].piece > NONE) {
+                    piece[board_table[x][y].piece].draw(gc, xx, yy, SQ_SIZE, SQ_SIZE, board_table[x][y].piece_color);
                 }
 
-                if (board_table[GAME][x][y].square_check > 3) {
+                if (board_table[x][y].square_check > 3) {
                     gc.setFill(Color.BLUE);
                     gc.fillOval(xx + OVAL_SIZE, yy + OVAL_SIZE, OVAL_SIZE, OVAL_SIZE);
                 }
-                else if (board_table[GAME][x][y].square_check > 1) {
+                else if (board_table[x][y].square_check > 1) {
                     gc.setFill(Color.GREEN);
                     gc.fillOval(xx + OVAL_SIZE, yy + OVAL_SIZE, OVAL_SIZE, OVAL_SIZE);
                 }
