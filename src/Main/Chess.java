@@ -9,14 +9,14 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import Game.GameLogic;
+import Game.Game;
 
 public class Chess extends Application {
 
     private HBox gamePane;
     private VBox infoPane;
     private HBox buttonPane;
-    private GameLogic logic;
+    private Game game;
     private Button menuButton;
     private Button replayButton;
     private Scene game_scene;
@@ -35,7 +35,7 @@ public class Chess extends Application {
         gamePane = new HBox();
         infoPane = new VBox();
         buttonPane = new HBox();
-        logic = new GameLogic(this);
+        game = new Game(this);
 
         menuButton = new Button();
         replayButton = new Button();
@@ -44,12 +44,12 @@ public class Chess extends Application {
         buttonPane.setSpacing(16);
         buttonPane.setAlignment(Pos.CENTER_LEFT);
         buttonPane.getChildren().addAll(menuButton, replayButton);
-        infoPane.getChildren().addAll(buttonPane, logic.getInfoBox());
-        gamePane.getChildren().addAll(logic.getCanvas(), infoPane);
+        infoPane.getChildren().addAll(buttonPane, game.getInfoBox());
+        gamePane.getChildren().addAll(game.getCanvas(), infoPane);
 
         menu = new Menu(this);
 
-        game_scene = new Scene(gamePane, logic.getGameWidth(), logic.getGameHeight());
+        game_scene = new Scene(gamePane, game.getGameWidth(), game.getGameHeight());
         menu_scene = new Scene(menu, menu.getMenuWidth(), menu.getMenuHeight());
 
         openMenu();
@@ -65,7 +65,7 @@ public class Chess extends Application {
         menuButton.setOnMouseClicked(event -> gameEnded("Replay Game"));
 
         replayButton.setVisible(false);
-        logic.initGame();
+        game.initGame();
 
         stage.setScene(game_scene);
     }
@@ -81,15 +81,15 @@ public class Chess extends Application {
         menuButton.setOnMouseClicked(event -> openMenu());
 
         replayButton.setText(button_string);
-        logic.pauseGame();
+        game.pauseGame();
 
-        if (logic.getMoveCount() > 0) {
+        if (game.getMoveCount() > 0) {
             replayButton.setVisible(true);
             replayButton.setOnMouseClicked(event -> {
 
                 replayButton.setText("Next Step");
-                logic.startReplay();
-                replayButton.setOnMouseClicked(event_ -> logic.replayStep());
+                game.startReplay();
+                replayButton.setOnMouseClicked(event_ -> game.replayStep());
             });
         }
         else openMenu();
