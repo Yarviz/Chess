@@ -44,7 +44,7 @@ public class Computer {
 
         piece_value[PAWN] = 1;
         piece_value[KNIGHT] = 3;
-        piece_value[BISHOP] = 4;
+        piece_value[BISHOP] = 3;
         piece_value[ROOK] = 5;
         piece_value[QUEEN] = 8;
         piece_value[KING] = 1;
@@ -65,7 +65,6 @@ public class Computer {
     public Move makeMove() {
 
         move_counter = 0;
-        best_value = -1000;
 
         countPieces(logic.board_table);
 
@@ -86,7 +85,12 @@ public class Computer {
         int pieces = 0;
         for(int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
-                if (table[x][y].piece > NONE) ++pieces;
+                if (table[x][y].piece > NONE) {
+                    ++pieces;
+
+                    if (table[x][y].piece_color == logic.rules.cur_player) best_value += piece_value[table[x][y].piece];
+                        else best_value -= piece_value[table[x][y].piece];
+                }
             }
         }
 
@@ -164,18 +168,13 @@ public class Computer {
                     }
 
                     ++deep_node[deep];
-                    countPositionValue(temp_board, temp_rules, x, y, deep);
+                    boolean cont = countPositionValue(temp_board, temp_rules, x, y, deep);
 
                     temp_rules.cur_player ^= 1;
-                    //++deep_node[deep];
 
-                    if (deep > 0 && !temp_rules.checkmate) {
+                    if (deep > 0 && !temp_rules.checkmate && cont) {
                         calculateMove(temp_board, temp_rules, deep);
                     }
-
-                    /*if (deep_node[deep] == 1) {
-                        logic.drawBoard(temp_board);
-                    }*/
                 }
             }
         }
@@ -183,9 +182,10 @@ public class Computer {
 
     private Move countBestValue()
     {
-        best_value = 0;
-        int node;
+        int best_value;
+        int node, item;
         List<Calculated> result = calculated[0];
+        List<Calculated> new_result = new ArrayList<>();
 
         for (int i = 0; i < initial_deep; i++) {
             if (!result.isEmpty()) {
@@ -205,12 +205,20 @@ public class Computer {
                     });
                 }
 
-                best_value += result.get(0).value;
+                best_value = result.get(0).value;
+
+                for (item = 0; item < result.size(); item++) {
+                    if (result.get(item).value < best_value) break;
+                }
+
+                System.out.println(result.size());
+                if (item > 0) item = rnd.nextInt(item);
+
                 System.out.printf("Deep %d nodes : %d best: %d nodes: %d %d %d ", i, deep_node[i], result.get(0).value, result.get(0).deep_node[0], result.get(0).deep_node[1], result.get(0).deep_node[2]);
                 System.out.printf("%c%d->%c%d%n", ('A' + result.get(0).move.x), result.get(0).move.y + 1, ('A' + result.get(0).move.x2), result.get(0).move.y2 + 1);
 
                 if (i < initial_deep - 1) {
-                    node = result.get(0).deep_node[i + 1];
+                    node = result.get(item).deep_node[i + 1];
                     result.clear();
 
                     for (int i2 = 0; i2 < calculated[i + 1].size(); i2++) {
@@ -220,16 +228,22 @@ public class Computer {
             }
             else result = calculated[i + 1];
         }
+
+        if (result.isEmpty()) {
+            System.out.println("Patti");
+            return move[0];
+        }
         System.out.printf("Choosen nodes: %d %d %d%n%n", result.get(0).deep_node[0], result.get(0).deep_node[1], result.get(0).deep_node[2]);
         return result.get(0).move;
         //return (temp_value > best_value || (temp_value == best_value && rnd.nextBoolean()));
     }
 
-    private void countPositionValue(BoardTable[][] table, LogicRules rules, int xx, int yy, int deep) {
+    private boolean countPositionValue(BoardTable[][] table, LogicRules rules, int xx, int yy, int deep) {
 
         int value = 0;
         int piece1 = 0;
         int piece2 = 0;
+        boolean cont = true;
 
         for(int y = 0; y < 8; y++) {
             for(int x = 0; x < 8; x++) {
@@ -251,6 +265,9 @@ public class Computer {
 
         calculated[deep].add(new Calculated(d_nodes, value, new Move(move[0].x, move[0].y, move[0].x2, move[0].y2, 0)));
         ++move_counter;
+
+        //if (rules.cur_player != logic.rules.cur_player && value > best_value) cont = false;
+        return cont;
 
         //System.out.printf("%c%d->%c%d value:%d %d %d %n", ('A' + move[0].x), move[0].y + 1, ('A' + move[0].x2), move[0].y2 + 1, value, deep_node[0], deep_node[1]);
     }
