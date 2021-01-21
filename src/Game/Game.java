@@ -69,7 +69,7 @@ public class Game extends GameLogic {
 
         initLogic();
         initBoard();
-        drawBoard();
+        drawBoard(board_table);
     }
 
     public Canvas getCanvas() {
@@ -152,7 +152,7 @@ public class Game extends GameLogic {
         board_table[x2][y2].piece_color = (replay_count + 1) % 2;
 
         addMove(x, y, x2, y2);
-        drawBoard();
+        drawBoard(board_table);
 
         if (replay_count == moves.size()) {
             game_state = GameType.PLAY;
@@ -174,7 +174,7 @@ public class Game extends GameLogic {
         rules.cur_player ^= 1;
 
         if (rules.cur_player == BLACK && !rules.checkmate) {
-            drawBoard();
+            drawBoard(board_table);
             drawText("Computer Turn");
 
             setComputerTimer();
@@ -185,7 +185,7 @@ public class Game extends GameLogic {
         checkTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                drawBoard();
+                drawBoard(board_table);
             }
         }, 3000);
     }
@@ -194,7 +194,7 @@ public class Game extends GameLogic {
         checkTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                Move ai_move = ai.makeMove(rules.cur_player);
+                Move ai_move = ai.makeMove();
                 makeMove(ai_move.x, ai_move.y, ai_move.x2, ai_move.y2);
             }
         }, 50);
@@ -222,7 +222,7 @@ public class Game extends GameLogic {
 
         if (board_table[x][y].square_check < 2 && state) {
             clearBoard(board_table);
-            drawBoard();
+            drawBoard(board_table);
             this.state = false;
         }
 
@@ -233,7 +233,7 @@ public class Game extends GameLogic {
             this.y = y;
 
             if (rules.cur_player == BLACK && !rules.checkmate && !rules.choose_piece) {
-                drawBoard();
+                drawBoard(board_table);
                 drawText("Computer Turn");
 
                 setComputerTimer();
@@ -247,7 +247,7 @@ public class Game extends GameLogic {
             this.state = true;
 
             lookMoves(board_table, rules, x, y);
-            drawBoard();
+            drawBoard(board_table);
         }
     }
 
@@ -279,7 +279,7 @@ public class Game extends GameLogic {
         if (castling > 0) moves.get(replay_count - 1).piece = castling + 1;
 
         clearBoard(board_table);
-        drawBoard();
+        drawBoard(board_table);
 
         this.state = false;
 

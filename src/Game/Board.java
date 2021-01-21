@@ -103,6 +103,10 @@ public class Board {
         }
     }
 
+    public Board getBoard() {
+        return this;
+    }
+
     protected void newBoard(BoardTable[][] table) {
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
@@ -194,7 +198,7 @@ public class Board {
         }
     }
 
-    protected void drawBoard() {
+    protected void drawBoard(BoardTable[][] table) {
 
         gc.setFill(Color.GOLD);
         gc.fillRect(BOARD_X, BOARD_X, BOARD_W, BOARD_W);
@@ -208,7 +212,7 @@ public class Board {
         {
             for (int x = 0; x < 8; x++)
             {
-                if (board_table[x][y].square_check == 1) {
+                if (table[x][y].square_check == 1) {
                     gc.setFill(Color.GRAY);
                     gc.fillRect(xx, yy, SQ_SIZE, SQ_SIZE);
                     gc.setFill(color[col]);
@@ -219,15 +223,15 @@ public class Board {
                     gc.fillRect(xx, yy, SQ_SIZE, SQ_SIZE);
                 }
 
-                if (board_table[x][y].piece > NONE) {
-                    piece[board_table[x][y].piece].draw(gc, xx, yy, SQ_SIZE, SQ_SIZE, board_table[x][y].piece_color);
+                if (table[x][y].piece > NONE) {
+                    piece[table[x][y].piece].draw(gc, xx, yy, SQ_SIZE, SQ_SIZE, table[x][y].piece_color);
                 }
 
-                if (board_table[x][y].square_check > 3) {
+                if (table[x][y].square_check > 3) {
                     gc.setFill(Color.BLUE);
                     gc.fillOval(xx + OVAL_SIZE, yy + OVAL_SIZE, OVAL_SIZE, OVAL_SIZE);
                 }
-                else if (board_table[x][y].square_check > 1) {
+                else if (table[x][y].square_check > 1) {
                     gc.setFill(Color.GREEN);
                     gc.fillOval(xx + OVAL_SIZE, yy + OVAL_SIZE, OVAL_SIZE, OVAL_SIZE);
                 }

@@ -48,9 +48,9 @@ public class Chess extends Application {
         menu = new Menu(this);
 
         game_scene = new Scene(gamePane, game.getGameWidth(), game.getGameHeight());
-        menu_scene = new Scene(menu, menu.getMenuWidth(), menu.getMenuHeight());
+        menu_scene = new Scene(menu, game.getGameWidth(), game.getGameHeight());
 
-        openMenu();
+        startGame();
 
         stage.setTitle("Chess");
         stage.setResizable(false);

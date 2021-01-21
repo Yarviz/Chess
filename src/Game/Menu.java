@@ -5,22 +5,26 @@ import javafx.geometry.VPos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 
-public class Menu extends Pane {
+public class Menu extends BorderPane {
 
     private Chess parent;
 
     private final int WIDTH = 512;
     private final int HEIGHT = 512;
+    private final int HUMAN = 0;
+    private final int COMPUTER = 1;
 
     private Canvas canvas;
     private GraphicsContext gc;
 
     private MenuText[] text;
+    private int player;
 
     private class MenuText {
         public int color;
@@ -44,27 +48,23 @@ public class Menu extends Pane {
         canvas.setHeight(HEIGHT);
 
         gc = canvas.getGraphicsContext2D();
-        getChildren().add(canvas);
+        setCenter(canvas);
+
+        player = COMPUTER;
 
         text = new MenuText[3];
         text[0] = new MenuText("Start Game", 224);
-        text[1] = new MenuText("Opponent: Computer", 272);
+        text[1] = new MenuText("Opponent:Computer", 272);
         text[2] = new MenuText("Exit", 320);
 
-        addEventFilter(MouseEvent.MOUSE_MOVED, event -> {
-            lookMouseHover((int)event.getSceneX(), (int)event.getSceneY());
+        canvas.addEventFilter(MouseEvent.MOUSE_MOVED, event -> {
+            lookMouseHover((int)(event.getSceneX() - canvas.getLayoutX()),
+                           (int)(event.getSceneY() - canvas.getLayoutY()));
         });
 
-        addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
+        canvas.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
             lookMouseClick();
         });
-    }
-
-    public int getMenuWidth() {
-        return WIDTH;
-    }
-    public int getMenuHeight() {
-        return HEIGHT;
     }
 
     private void lookMouseHover(int x, int y) {
@@ -89,6 +89,14 @@ public class Menu extends Pane {
 
     private void lookMouseClick() {
         if (text[0].hover) parent.startGame();
+        else if (text[1].hover) {
+            player ^= 1;
+            if (player == HUMAN) text[1].text = "Opponent: Human";
+                else text[1].text = "Opponent: Computer";
+
+            drawMenu();
+            drawMenuText();
+        }
         else if (text[2].hover) System.exit(0);
     }
 
@@ -104,7 +112,7 @@ public class Menu extends Pane {
         Color[] color = {Color.GRAY, Color.GREEN};
 
         for(int i = 0; i < 3; i++) {
-            drawText(text[i].text, text[i].y_pos, Font.font("Consolas", 24), color[text[i].color]);
+            drawText(text[i].text, text[i].y_pos, Font.font("Consolas", 26), color[text[i].color]);
         }
     }
 
