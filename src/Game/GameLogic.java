@@ -20,7 +20,7 @@ public class GameLogic extends Board {
         public Vector<Move> escape_moves;
 
         LogicRules() {
-            this.escape_moves = new Vector<>(16);
+            this.escape_moves = new Vector<>();
             this.king_move = new boolean[2];
             this.rook_left_move = new boolean[2];
             this.rook_right_move = new boolean[2];

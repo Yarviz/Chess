@@ -195,7 +195,11 @@ public class Game extends GameLogic {
             @Override
             public void run() {
                 Move ai_move = ai.makeMove();
-                makeMove(ai_move.x, ai_move.y, ai_move.x2, ai_move.y2);
+                if (ai_move.x == -1) {
+                    rules.checkmate = true;
+                    drawText("Draw");
+                }
+                else makeMove(ai_move.x, ai_move.y, ai_move.x2, ai_move.y2);
             }
         }, 50);
     }

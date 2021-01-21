@@ -15,6 +15,7 @@ public class Computer {
 
     private int move_counter;
     private int best_value;
+    private int temp_value;
     private int initial_deep;
 
     private final int MAX_DEEP = 7;
@@ -22,7 +23,7 @@ public class Computer {
     private final Move[] move;
     private final int[] piece_value;
     private final int[] deep_node;
-    private final ArrayList<Calculated>[] calculated;
+    private final ArrayList<Calculated> calculated;
 
     private class Calculated {
         public final int[] deep_node;
@@ -46,16 +47,12 @@ public class Computer {
         piece_value[KNIGHT] = 3;
         piece_value[BISHOP] = 3;
         piece_value[ROOK] = 5;
-        piece_value[QUEEN] = 8;
+        piece_value[QUEEN] = 9;
         piece_value[KING] = 1;
 
         rnd = new Random();
 
-        calculated = new ArrayList[MAX_DEEP];
-
-        for (int i = 0; i < MAX_DEEP; i++) {
-            calculated[i] = new ArrayList<>();
-        }
+        calculated = new ArrayList<>();
 
         move = new Move[2];
         move[0] = new Move(0, 0, 0, 0, 0);
@@ -65,17 +62,15 @@ public class Computer {
     public Move makeMove() {
 
         move_counter = 0;
-
         countPieces(logic.board_table);
 
         for (int i = 0; i < initial_deep; i++) {
             deep_node[i] = 0;
-            calculated[i].clear();
+            calculated.clear();
         }
 
         calculateMove(logic.board_table, logic.rules, initial_deep);
         move[1] = countBestValue();
-        //System.out.printf("Moves: %d  Best: %d Move: %c%d->%c%d%n", move_counter, best_value, ('A' + move[1].x), move[1].y + 1, ('A' + move[1].x2), move[1].y2 + 1);
 
         return move[1];
     }
@@ -85,19 +80,12 @@ public class Computer {
         int pieces = 0;
         for(int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
-                if (table[x][y].piece > NONE) {
-                    ++pieces;
-
-                    if (table[x][y].piece_color == logic.rules.cur_player) best_value += piece_value[table[x][y].piece];
-                        else best_value -= piece_value[table[x][y].piece];
-                }
+                if (table[x][y].piece > NONE) ++pieces;
             }
         }
 
-        if (pieces < 4) initial_deep = 6;
-        else if (pieces < 8) initial_deep = 5;
-        else if (pieces < 16) initial_deep = 4;
-        else initial_deep = 3;
+        if (pieces < 6) initial_deep = 5;
+            else initial_deep = 3;
     }
 
     private void calculateMove(BoardTable[][] table, LogicRules rules, int deep) {
@@ -137,6 +125,7 @@ public class Computer {
         logic.newBoard(temp_board);
 
         LogicRules temp_rules = new LogicRules();
+        Move new_move = new Move(xx, yy, 0, 0, 0);
 
         for(int y = 0; y < 8; y++) {
             for(int x = 0; x < 8; x++) {
@@ -153,7 +142,10 @@ public class Computer {
                     if (deep == initial_deep - 1) {
                         move[0].x2 = x;
                         move[0].y2 = y;
+                        //temp_value = 0;
                     }
+                    new_move.x2 = x;
+                    new_move.y2 = y;
 
                     logic.lookSpecialMoves(temp_board, temp_rules, x, y);
                     logic.lookPawnPassant(temp_board, temp_rules, x, y);
@@ -167,10 +159,10 @@ public class Computer {
                         temp_rules.choose_piece = false;
                     }
 
-                    ++deep_node[deep];
-                    boolean cont = countPositionValue(temp_board, temp_rules, x, y, deep);
+                    boolean cont = countPositionValue(temp_board, temp_rules, new_move, deep);
 
                     temp_rules.cur_player ^= 1;
+                    ++deep_node[deep];
 
                     if (deep > 0 && !temp_rules.checkmate && cont) {
                         calculateMove(temp_board, temp_rules, deep);
@@ -182,63 +174,48 @@ public class Computer {
 
     private Move countBestValue()
     {
+        if (calculated.isEmpty()) {
+            System.out.println("Computer Draw");
+            return new Move(-1, -1, -1, -1,0);
+        }
+
         int best_value;
-        int node, item;
-        List<Calculated> result = calculated[0];
-        List<Calculated> new_result = new ArrayList<>();
+        int item = 0;
+        List<Calculated> result = calculated;
 
-        for (int i = 0; i < initial_deep; i++) {
-            if (!result.isEmpty()) {
+        Collections.sort(result, (c1, c2) -> {
+            if (c1.value > c2.value) return -1;
+            else if (c1.value == c2.value) return 0;
+            else return 1;
+        });
 
-                if ((initial_deep % 2) == 0 && i == 0) {
-                    Collections.sort(result, (c1, c2) -> {
-                        if (c1.value < c2.value) return -1;
-                        else if (c1.value == c2.value) return 0;
-                        else return 1;
-                    });
-                }
-                else {
-                    Collections.sort(result, (c1, c2) -> {
-                        if (c1.value > c2.value) return -1;
-                        else if (c1.value == c2.value) return 0;
-                        else return 1;
-                    });
-                }
+        if (initial_deep > 1) {
+            int node = result.get(item).deep_node[1];
+            System.out.printf("Choosen node: %d value:%d%n", item, result.get(item).value);
+            int count = 0;
 
-                best_value = result.get(0).value;
+            for (int i = 1; i < initial_deep; i++) {
 
-                for (item = 0; item < result.size(); item++) {
-                    if (result.get(item).value < best_value) break;
+                if (i % 2 == result.get(item).move.piece) {
+                    count = 0;
+                    while(result.get(count++).deep_node[i] != node);
+                } else {
+                    count = result.size() - 1;
+                    while(result.get(count--).deep_node[i] != node);
                 }
 
-                System.out.println(result.size());
-                if (item > 0) item = rnd.nextInt(item);
-
-                System.out.printf("Deep %d nodes : %d best: %d nodes: %d %d %d ", i, deep_node[i], result.get(0).value, result.get(0).deep_node[0], result.get(0).deep_node[1], result.get(0).deep_node[2]);
-                System.out.printf("%c%d->%c%d%n", ('A' + result.get(0).move.x), result.get(0).move.y + 1, ('A' + result.get(0).move.x2), result.get(0).move.y2 + 1);
-
-                if (i < initial_deep - 1) {
-                    node = result.get(item).deep_node[i + 1];
-                    result.clear();
-
-                    for (int i2 = 0; i2 < calculated[i + 1].size(); i2++) {
-                        if (calculated[i + 1].get(i2).deep_node[i + 1] == node) result.add(calculated[i + 1].get(i2));
-                    }
-                }
+                System.out.printf("Choosen node: %d value:%d%n", count, result.get(count).value);
+                if (i + 1 < initial_deep) node = result.get(count).deep_node[i + 1];
             }
-            else result = calculated[i + 1];
+            item = count;
         }
 
-        if (result.isEmpty()) {
-            System.out.println("Patti");
-            return move[0];
-        }
-        System.out.printf("Choosen nodes: %d %d %d%n%n", result.get(0).deep_node[0], result.get(0).deep_node[1], result.get(0).deep_node[2]);
-        return result.get(0).move;
-        //return (temp_value > best_value || (temp_value == best_value && rnd.nextBoolean()));
+        //System.out.printf("Choosen nodes: %d %d %d%n%n", result.get(0).deep_node[0], result.get(0).deep_node[1], result.get(0).deep_node[1]);
+
+        return result.get(item).move;
     }
 
-    private boolean countPositionValue(BoardTable[][] table, LogicRules rules, int xx, int yy, int deep) {
+    private boolean countPositionValue(BoardTable[][] table, LogicRules rules, Move mov, int deep) {
 
         int value = 0;
         int piece1 = 0;
@@ -248,8 +225,8 @@ public class Computer {
         for(int y = 0; y < 8; y++) {
             for(int x = 0; x < 8; x++) {
                 if (table[x][y].piece > NONE) {
-                    if (table[x][y].piece_color == rules.cur_player) piece1 += 1;//piece_value[table[x][y].piece];
-                    else piece2 += 1;//piece_value[table[x][y].piece];
+                    if (table[x][y].piece_color == logic.rules.cur_player) piece1 += piece_value[table[x][y].piece];
+                    else piece2 += piece_value[table[x][y].piece];
                 }
             }
         }
@@ -258,17 +235,19 @@ public class Computer {
 
         if (rules.checkmate && rules.cur_player == logic.rules.cur_player) value += 30;
 
-        int[] d_nodes = new int[initial_deep];
-        for (int i = 0; i < initial_deep; i++) {
-            d_nodes[i] = deep_node[i];
-        }
+        if (deep == 0) {
 
-        calculated[deep].add(new Calculated(d_nodes, value, new Move(move[0].x, move[0].y, move[0].x2, move[0].y2, 0)));
+            int[] d_nodes = new int[initial_deep];
+            for (int i = 0; i < initial_deep; i++) {
+                d_nodes[i] = deep_node[i];
+            }
+
+            calculated.add(new Calculated(d_nodes, value, new Move(move[0].x, move[0].y, move[0].x2, move[0].y2, rules.cur_player)));
+            //System.out.printf("value: %d nodes: %d %d %d ", value, deep_node[0], deep_node[1], deep_node[2]);
+            //System.out.printf("%c%d->%c%d%n", ('A' + move[0].x), move[0].y + 1, ('A' + move[0].x2), move[0].y2 + 1);
+        }
         ++move_counter;
 
-        //if (rules.cur_player != logic.rules.cur_player && value > best_value) cont = false;
         return cont;
-
-        //System.out.printf("%c%d->%c%d value:%d %d %d %n", ('A' + move[0].x), move[0].y + 1, ('A' + move[0].x2), move[0].y2 + 1, value, deep_node[0], deep_node[1]);
     }
 }
