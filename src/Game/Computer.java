@@ -179,38 +179,40 @@ public class Computer {
             return new Move(-1, -1, -1, -1,0);
         }
 
-        int best_value;
         int item = 0;
-        List<Calculated> result = calculated;
+        int nodes_count;
+        int best_value;
+        List<Calculated> result2 = calculated;
+        List<Calculated> result = new ArrayList<>();
 
-        Collections.sort(result, (c1, c2) -> {
-            if (c1.value > c2.value) return -1;
-            else if (c1.value == c2.value) return 0;
-            else return 1;
-        });
+        Collections.sort(result2, Comparator.comparingInt((Calculated c) -> c.deep_node[initial_deep - 1]).thenComparingInt(c -> c.value));
 
-        if (initial_deep > 1) {
-            int node = result.get(item).deep_node[1];
-            System.out.printf("Choosen node: %d value:%d%n", item, result.get(item).value);
-            int count = 0;
+        nodes_count = result2.get(0).deep_node[initial_deep - 1];
 
-            for (int i = 1; i < initial_deep; i++) {
-
-                if (i % 2 == result.get(item).move.piece) {
-                    count = 0;
-                    while(result.get(count).deep_node[i] != node) ++count;
-                } else {
-                    count = result.size() - 1;
-                    while(result.get(count).deep_node[i] != node) --count;
-                }
-
-                System.out.printf("Choosen node: %d value:%d%n", count, result.get(count).value);
-                if (i + 1 < initial_deep) node = result.get(count).deep_node[i + 1];
+        for(int i = 0; i < result2.size(); i++) {
+            if (result2.get(i).deep_node[initial_deep - 1] == nodes_count) {
+                result.add(result2.get(i));
+                if (++nodes_count > deep_node[initial_deep - 1]) break;
             }
-            item = count;
         }
 
-        //System.out.printf("Choosen nodes: %d %d %d%n%n", result.get(0).deep_node[0], result.get(0).deep_node[1], result.get(0).deep_node[1]);
+        if (initial_deep % 2 == 0) {
+            Collections.sort(result, Comparator.comparingInt((Calculated c) -> c.value));
+        }
+        else {
+            Collections.sort(result, Comparator.comparingInt((Calculated c) -> c.value).reversed());
+        }
+
+        for (Calculated c: result) {
+            System.out.printf("value: %d nodes: %d %d %d ", c.value, c.deep_node[0], c.deep_node[1], c.deep_node[2]);
+            System.out.printf("%c%d->%c%d%n", ('A' + c.move.x), c.move.y + 1, ('A' + c.move.x2), c.move.y2 + 1);
+        }
+
+        best_value = result.get(0).value;
+        for(item = 0; item < result.size(); item++) {
+            if (result.get(item).value != best_value) break;
+        }
+        if (item > 0) item = rnd.nextInt(item);
 
         return result.get(item).move;
     }
