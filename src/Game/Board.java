@@ -63,6 +63,7 @@ public class Board {
     }
 
     protected void initBoard() {
+
         clearBoard(board_table);
         clearBoardPieces(board_table);
 
@@ -89,16 +90,6 @@ public class Board {
         }
 
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        gc.setFill(Color.BLACK);
-        gc.setFont(Font.font("Verdana", SQ_SIZE / 4));
-
-        for (int i = 0; i < 8; i++) {
-            gc.fillText(Character.toString('A' + i), SQ_SIZE + SQ_SIZE / 2 + i * SQ_SIZE - 4, SQ_SIZE - SQ_SIZE / 4);
-        }
-
-        for (int i = 0; i < 8; i++) {
-            gc.fillText(Integer.toString(i + 1), SQ_SIZE - SQ_SIZE / 2, SQ_SIZE + SQ_SIZE / 2 + i * SQ_SIZE + 4);
-        }
     }
 
     protected void newBoard(BoardTable[][] table) {
@@ -189,6 +180,20 @@ public class Board {
         }
     }
 
+    protected void drawPositionText() {
+
+        gc.setFill(Color.BLACK);
+        gc.setFont(Font.font("Verdana", (float)SQ_SIZE / 4));
+
+        for (int i = 0; i < 8; i++) {
+            gc.fillText(Character.toString('A' + i), SQ_SIZE + SQ_SIZE / 2 + i * SQ_SIZE - 4, SQ_SIZE - SQ_SIZE / 4);
+        }
+
+        for (int i = 0; i < 8; i++) {
+            gc.fillText(Integer.toString(i + 1), SQ_SIZE - SQ_SIZE / 2, SQ_SIZE + SQ_SIZE / 2 + i * SQ_SIZE + 4);
+        }
+    }
+
     protected void drawBoard(BoardTable[][] table) {
 
         gc.setFill(Color.GOLD);
@@ -234,5 +239,6 @@ public class Board {
             xx = SQ_SIZE;
             yy += SQ_SIZE;
         }
+
     }
 }

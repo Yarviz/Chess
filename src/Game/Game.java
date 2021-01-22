@@ -3,6 +3,7 @@ package Game;
 import static Piece.Piece.*;
 
 import Main.Chess;
+import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.MouseEvent;
@@ -109,46 +110,53 @@ public class Game extends GameLogic {
             return running;
         }
 
+        public void cancel() {
+            timer.cancel();
+            timer.purge();
+        }
+
         public void runAnimation() {
             running = true;
 
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
+            if (steps-- > 0)
+            {
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        Platform.runLater(() -> {
+                            drawBoard(board_table);
 
-                    if (--steps > 0) {
-                        drawBoard(board_table);
+                            x[0] += x_add[0];
+                            y += y_add;
 
-                        x[0] += x_add[0];
-                        y += y_add;
+                            piece[pcs].draw(gc, (int)x[0], (int)y, SQ_SIZE, SQ_SIZE, color);
+                            if (castle > 0) {
+                                x[1] += x_add[1];
+                                piece[ROOK].draw(gc, (int)x[1], (int)y, SQ_SIZE, SQ_SIZE, color);
+                            }
 
-                        piece[pcs].draw(gc, (int)x[0], (int)y, SQ_SIZE, SQ_SIZE, color);
-                        if (castle > 0) {
-                            x[1] += x_add[1];
-                            piece[ROOK].draw(gc, (int)x[1], (int)y, SQ_SIZE, SQ_SIZE, color);
-                        }
-
-                        runAnimation();
+                            runAnimation();
+                        });
                     }
-                    else {
-                        running = false;
+                }, 20);
+            }
+            else {
+                running = false;
 
-                        if (board_table[pcs_x][pcs_y].piece > NONE) {
-                            addPiece(board_table[pcs_x][pcs_y].piece, board_table[pcs_x][pcs_y].piece_color);
-                        }
-
-                        board_table[pcs_x][pcs_y].piece = pcs;
-                        board_table[pcs_x][pcs_y].piece_color = color;
-
-                        if (castle > 0) {
-                            board_table[cast_x][pcs_y].piece = ROOK;
-                            board_table[cast_x][pcs_y].piece_color = color;
-                        }
-
-                        updateBoard();
-                    }
+                if (board_table[pcs_x][pcs_y].piece > NONE) {
+                    addPiece(board_table[pcs_x][pcs_y].piece, board_table[pcs_x][pcs_y].piece_color);
                 }
-            }, 20);
+
+                board_table[pcs_x][pcs_y].piece = pcs;
+                board_table[pcs_x][pcs_y].piece_color = color;
+
+                if (castle > 0) {
+                    board_table[cast_x][pcs_y].piece = ROOK;
+                    board_table[cast_x][pcs_y].piece_color = color;
+                }
+
+                updateBoard();
+            }
         }
     }
 
@@ -195,6 +203,7 @@ public class Game extends GameLogic {
         initLogic();
         initBoard();
         drawBoard(board_table);
+        drawPositionText();
     }
 
     public Canvas getCanvas() {
@@ -304,7 +313,7 @@ public class Game extends GameLogic {
         }
     }
 
-    private void setTimer() {
+    private void setCheckTimer() {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -378,7 +387,7 @@ public class Game extends GameLogic {
         if (rules.check) {
             if (!rules.checkmate) {
                 drawText("Check");
-                setTimer();
+                setCheckTimer();
             }
             else {
                 drawText("Checkmate");
