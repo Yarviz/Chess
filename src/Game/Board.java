@@ -21,8 +21,6 @@ public class Board {
     static final int OVAL_SIZE = SQ_SIZE / 3;
 
     static final int DIF_PIECES = 6;
-    static final int GAME = 0;
-    static final int TEMP = 1;
 
     protected BoardTable[][] board_table;
     protected final Piece[] piece = new Piece[DIF_PIECES];
@@ -140,11 +138,11 @@ public class Board {
         }
     }
 
-    /*protected void clearBoardCheckMate(int table) {
+    /*protected void clearBoardCheckMate(BoardTable[][] table) {
         for (int y = 0; y < 8; y++)
         {
             for (int x = 0; x < 8; x++) {
-                board_table[table][x][y].square_checkmate = false;
+                table[x][y].square_checkmate = false;
             }
         }
     }*/
@@ -153,11 +151,8 @@ public class Board {
         for (int y = 0; y < 8; y++)
         {
             for (int x = 0; x < 8; x++) {
-                /*board_table[TEMP][x][y].square_checkmate = board_table[x][y].square_checkmate;
-                board_table[TEMP][x][y].square_check = board_table[x][y].square_check;
-                board_table[TEMP][x][y].piece = board_table[x][y].piece;
-                board_table[TEMP][x][y].piece_color = board_table[x][y].piece_color;*/
 
+                //dest[x][y].square_checkmate = src[x][y].square_checkmate;
                 dest[x][y].square_pawn = src[x][y].square_pawn;
                 dest[x][y].square_check = src[x][y].square_check;
                 dest[x][y].piece = src[x][y].piece;

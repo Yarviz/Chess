@@ -1,7 +1,6 @@
 package Game;
 
 import static Piece.Piece.*;
-import static Game.GameLogic.*;
 
 import Main.Chess;
 import javafx.scene.canvas.Canvas;
@@ -23,10 +22,13 @@ public class Game extends GameLogic {
 
     private enum GameType {
         PLAY,
-        REPLAY
+        REPLAY,
+        HUMAN,
+        COMPUTER
     }
 
     private GameType game_state;
+    private GameType black_player;
     private final Vector<Move> moves;
     private TextArea infoText;
     private Timer checkTimer;
@@ -37,6 +39,7 @@ public class Game extends GameLogic {
         this.parent = parent;
         this.pieces_win = new int[2];
         this.moves = new Vector<>(64);
+        this.ai = new Computer(getLogic());
 
         infoText = new TextArea();
         infoText.setFont(Font.font("Consolas", SQ_SIZE / 4));
@@ -54,7 +57,7 @@ public class Game extends GameLogic {
         checkTimer = new Timer();
     }
 
-    public void initGame() {
+    public void initGame(int player) {
 
         this.x = 0;
         this.y = 0;
@@ -65,7 +68,9 @@ public class Game extends GameLogic {
         this.game_state = GameType.PLAY;
         this.replay_count = 0;
         this.infoText.clear();
-        this.ai = new Computer(getLogic());
+
+        if (player == 0) black_player = GameType.HUMAN;
+            else black_player = GameType.COMPUTER;
 
         initLogic();
         initBoard();
@@ -102,7 +107,7 @@ public class Game extends GameLogic {
     }
 
     public void startReplay() {
-        initGame();
+        initGame(0);
         game_state = GameType.REPLAY;
     }
 
@@ -173,7 +178,7 @@ public class Game extends GameLogic {
 
         rules.cur_player ^= 1;
 
-        if (rules.cur_player == BLACK && !rules.checkmate) {
+        if (rules.cur_player == BLACK && !rules.checkmate && black_player == GameType.COMPUTER) {
             drawBoard(board_table);
             drawText("Computer Turn");
 
@@ -236,7 +241,7 @@ public class Game extends GameLogic {
             this.x = x;
             this.y = y;
 
-            if (rules.cur_player == BLACK && !rules.checkmate && !rules.choose_piece) {
+            if (rules.cur_player == BLACK && !rules.checkmate && !rules.choose_piece && black_player == GameType.COMPUTER) {
                 drawBoard(board_table);
                 drawText("Computer Turn");
 
@@ -271,7 +276,7 @@ public class Game extends GameLogic {
             moves.get(replay_count - 1).piece = KING + 3 + rules.cur_player;
         }
 
-        if (rules.choose_piece && rules.cur_player == BLACK)
+        if (rules.choose_piece && rules.cur_player == BLACK && black_player == GameType.COMPUTER)
         {
             board_table[x2][y2].piece = QUEEN;
             rules.choose_piece = false;

@@ -205,14 +205,14 @@ public class GameLogic extends Board {
         }
 
         x1 = x;
-        copyBoard(board_table, temp_board);
+        copyBoard(table, temp_board);
 
         while(x1 != x3) {
             x1 += x_add;
             temp_board[x1][y].piece = KING;
             temp_board[x1][y].piece_color = player;
 
-            if (lookCheck(table, rules,player ^ 1)) return;
+            if (lookCheck(temp_board, rules,player ^ 1)) return;
         }
 
         table[x3][y].square_check = 4 + type;

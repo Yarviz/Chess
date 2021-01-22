@@ -88,7 +88,7 @@ public class Menu extends BorderPane {
     }
 
     private void lookMouseClick() {
-        if (text[0].hover) parent.startGame();
+        if (text[0].hover) parent.startGame(player);
         else if (text[1].hover) {
             player ^= 1;
             if (player == HUMAN) text[1].text = "Opponent: Human";

@@ -50,20 +50,22 @@ public class Chess extends Application {
         game_scene = new Scene(gamePane, game.getGameWidth(), game.getGameHeight());
         menu_scene = new Scene(menu, game.getGameWidth(), game.getGameHeight());
 
-        startGame();
+        openMenu();
+        //startGame();
 
         stage.setTitle("Chess");
         stage.setResizable(false);
         stage.show();
     }
 
-    public void startGame() {
+    public void startGame(int player) {
 
         menuButton.setText("End Game");
         menuButton.setOnMouseClicked(event -> gameEnded("Replay Game"));
 
         replayButton.setVisible(false);
-        game.initGame();
+
+        game.initGame(player);
 
         stage.setScene(game_scene);
     }
