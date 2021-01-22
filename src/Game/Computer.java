@@ -45,7 +45,7 @@ public class Computer {
         piece_value[BISHOP] = 3;
         piece_value[ROOK] = 5;
         piece_value[QUEEN] = 9;
-        piece_value[KING] = 15;
+        piece_value[KING] = 1;
 
         rnd = new Random();
 
@@ -233,6 +233,7 @@ public class Computer {
         }
 
         value += piece1 - piece2;
+        if (rules.checkmate && rules.cur_player == logic.rules.cur_player) value += 30;
 
         if (deep == 0) {
 

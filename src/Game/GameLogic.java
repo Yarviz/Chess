@@ -81,11 +81,6 @@ public class GameLogic extends Board {
         return this;
     }
 
-    @Override
-    public Board getBoard() {
-        return super.getBoard();
-    }
-
     protected void initLogic() {
 
         rules.initRules();

@@ -101,10 +101,6 @@ public class Board {
         }
     }
 
-    public Board getBoard() {
-        return this;
-    }
-
     protected void newBoard(BoardTable[][] table) {
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
