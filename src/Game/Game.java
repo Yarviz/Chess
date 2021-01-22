@@ -175,13 +175,12 @@ public class Game extends GameLogic {
         rules.choose_piece = false;
         lookPlayerCheck(board_table, rules, x, y);
         clearBoard(board_table);
+        drawBoard(board_table);
 
         rules.cur_player ^= 1;
 
         if (rules.cur_player == BLACK && !rules.checkmate && black_player == GameType.COMPUTER) {
-            drawBoard(board_table);
             drawText("Computer Turn");
-
             setComputerTimer();
         }
     }
