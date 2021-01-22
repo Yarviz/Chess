@@ -1,6 +1,5 @@
 package Game;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
@@ -14,8 +13,6 @@ public class Computer {
     private final Random rnd;
 
     private int move_counter;
-    private int best_value;
-    private int temp_value;
     private int initial_deep;
 
     private final int MAX_DEEP = 7;
@@ -48,7 +45,7 @@ public class Computer {
         piece_value[BISHOP] = 3;
         piece_value[ROOK] = 5;
         piece_value[QUEEN] = 9;
-        piece_value[KING] = 1;
+        piece_value[KING] = 15;
 
         rnd = new Random();
 
@@ -142,7 +139,6 @@ public class Computer {
                     if (deep == initial_deep - 1) {
                         move[0].x2 = x;
                         move[0].y2 = y;
-                        //temp_value = 0;
                     }
                     new_move.x2 = x;
                     new_move.y2 = y;
@@ -159,14 +155,17 @@ public class Computer {
                         temp_rules.choose_piece = false;
                     }
 
-                    boolean cont = countPositionValue(temp_board, temp_rules, new_move, deep);
+                    //boolean cont = countPositionValue(temp_board, temp_rules, new_move, deep);
 
                     temp_rules.cur_player ^= 1;
-                    ++deep_node[deep];
 
-                    if (deep > 0 && !temp_rules.checkmate && cont) {
+                    ++deep_node[deep];
+                    ++move_counter;
+
+                    if (deep > 0 /*&& !temp_rules.checkmate && cont*/) {
                         calculateMove(temp_board, temp_rules, deep);
                     }
+                    countPositionValue(temp_board, temp_rules, new_move, deep);
                 }
             }
         }
@@ -203,10 +202,10 @@ public class Computer {
             Collections.sort(result, Comparator.comparingInt((Calculated c) -> c.value).reversed());
         }
 
-        for (Calculated c: result) {
+        /*for (Calculated c: result) {
             System.out.printf("value: %d nodes: %d %d %d ", c.value, c.deep_node[0], c.deep_node[1], c.deep_node[2]);
             System.out.printf("%c%d->%c%d%n", ('A' + c.move.x), c.move.y + 1, ('A' + c.move.x2), c.move.y2 + 1);
-        }
+        }*/
 
         best_value = result.get(0).value;
         for(item = 0; item < result.size(); item++) {
@@ -235,8 +234,6 @@ public class Computer {
 
         value += piece1 - piece2;
 
-        if (rules.checkmate && rules.cur_player == logic.rules.cur_player) value += 30;
-
         if (deep == 0) {
 
             int[] d_nodes = new int[initial_deep];
@@ -245,10 +242,7 @@ public class Computer {
             }
 
             calculated.add(new Calculated(d_nodes, value, new Move(move[0].x, move[0].y, move[0].x2, move[0].y2, rules.cur_player)));
-            //System.out.printf("value: %d nodes: %d %d %d ", value, deep_node[0], deep_node[1], deep_node[2]);
-            //System.out.printf("%c%d->%c%d%n", ('A' + move[0].x), move[0].y + 1, ('A' + move[0].x2), move[0].y2 + 1);
         }
-        ++move_counter;
 
         return cont;
     }
