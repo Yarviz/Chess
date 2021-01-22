@@ -67,7 +67,7 @@ public class Chess extends Application {
 
         replayButton.setVisible(false);
 
-        game.initGame(player, animations);
+        game.initGame(player, animations, Game.GameType.PLAY);
         stage.setScene(game_scene);
     }
 

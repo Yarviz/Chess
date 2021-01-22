@@ -22,7 +22,7 @@ public class Game extends GameLogic {
     private boolean animation_on;
     private Computer ai;
 
-    private enum GameType {
+    public enum GameType {
         PLAY,
         REPLAY,
         HUMAN,
@@ -184,7 +184,7 @@ public class Game extends GameLogic {
         timer = new Timer();
     }
 
-    public void initGame(int player, boolean animation_on) {
+    public void initGame(int player, boolean animation_on, GameType type) {
 
         this.x = 0;
         this.y = 0;
@@ -192,13 +192,15 @@ public class Game extends GameLogic {
         this.pieces_win[WHITE] = 0;
         this.pieces_win[BLACK] = 0;
 
-        this.game_state = GameType.PLAY;
+        this.game_state = type;
         this.animation_on = animation_on;
         this.replay_count = 0;
         this.infoText.clear();
 
         if (player == 0) black_player = GameType.HUMAN;
             else black_player = GameType.COMPUTER;
+
+        if (game_state == GameType.PLAY) this.moves.clear();
 
         initLogic();
         initBoard();
@@ -236,8 +238,7 @@ public class Game extends GameLogic {
     }
 
     public void startReplay() {
-        initGame(0, false);
-        game_state = GameType.REPLAY;
+        initGame(0, false, GameType.REPLAY);
     }
 
     public void replayStep() {
