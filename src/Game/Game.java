@@ -132,6 +132,11 @@ public class Game extends GameLogic {
                     }
                     else {
                         running = false;
+
+                        if (board_table[pcs_x][pcs_y].piece > NONE) {
+                            addPiece(board_table[pcs_x][pcs_y].piece, board_table[pcs_x][pcs_y].piece_color);
+                        }
+
                         board_table[pcs_x][pcs_y].piece = pcs;
                         board_table[pcs_x][pcs_y].piece_color = color;
 
@@ -421,7 +426,7 @@ public class Game extends GameLogic {
         lookPlayerCheck(board_table, rules, x2, y2);
 
         int castling = movePossibleCastling(board_table, rules, x2, y2);
-        if (castling > 0) moves.get(replay_count - 1).piece = castling + 1;
+        if (castling > 0) moves.get(replay_count - 1).piece = KING + castling;
 
         clearBoard(board_table);
 
@@ -448,7 +453,7 @@ public class Game extends GameLogic {
 
         if (board_table[x][y].piece > NONE) {
 
-            addPiece(board_table[x][y].piece, board_table[x][y].piece_color);
+            if (animation_on == false) addPiece(board_table[x][y].piece, board_table[x][y].piece_color);
             board_table[x][y].piece_color = NONE;
             board_table[x][y].piece = NONE;
         }
@@ -465,9 +470,5 @@ public class Game extends GameLogic {
             piece[pcs].draw(gc, SQ_SIZE * 9 - pieces_win[BLACK] * (SQ_SIZE / 4) - (SQ_SIZE / 8),
                     SQ_SIZE * 9 + SQ_SIZE / 3, SQ_SIZE / 2, SQ_SIZE / 2, WHITE);
         }
-    }
-
-    private void doAnimation(int x, int y, int x2, int y2) {
-
     }
 }
