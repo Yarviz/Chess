@@ -58,14 +58,14 @@ public class Chess extends Application {
         stage.show();
     }
 
-    public void startGame(int player) {
+    public void startGame(int player, boolean animations) {
 
         menuButton.setText("End Game");
         menuButton.setOnMouseClicked(event -> gameEnded("Replay Game"));
 
         replayButton.setVisible(false);
 
-        game.initGame(player);
+        game.initGame(player, animations);
 
         stage.setScene(game_scene);
     }

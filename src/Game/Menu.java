@@ -25,6 +25,7 @@ public class Menu extends BorderPane {
 
     private MenuText[] text;
     private int player;
+    private boolean animations;
 
     private class MenuText {
         public int color;
@@ -51,11 +52,13 @@ public class Menu extends BorderPane {
         setCenter(canvas);
 
         player = COMPUTER;
+        animations = true;
 
-        text = new MenuText[3];
+        text = new MenuText[4];
         text[0] = new MenuText("Start Game", 224);
-        text[1] = new MenuText("Opponent:Computer", 272);
-        text[2] = new MenuText("Exit", 320);
+        text[1] = new MenuText("Opponent: Computer", 272);
+        text[2] = new MenuText("Animations: On", 320);
+        text[3] = new MenuText("Exit", 368);
 
         canvas.addEventFilter(MouseEvent.MOUSE_MOVED, event -> {
             lookMouseHover((int)(event.getSceneX() - canvas.getLayoutX()),
@@ -71,7 +74,7 @@ public class Menu extends BorderPane {
 
         boolean redraw = false;
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             if (y > text[i].y_pos - 8 && y < text[i].y_pos + 8 && x > 128 && x < 384 && !text[i].hover) {
                 text[i].hover = true;
                 text[i].color = 1;
@@ -88,7 +91,7 @@ public class Menu extends BorderPane {
     }
 
     private void lookMouseClick() {
-        if (text[0].hover) parent.startGame(player);
+        if (text[0].hover) parent.startGame(player, animations);
         else if (text[1].hover) {
             player ^= 1;
             if (player == HUMAN) text[1].text = "Opponent: Human";
@@ -97,7 +100,21 @@ public class Menu extends BorderPane {
             drawMenu();
             drawMenuText();
         }
-        else if (text[2].hover) System.exit(0);
+        else if (text[2].hover) {
+
+            if (animations == false) {
+                text[2].text = "Animations: On";
+                animations = true;
+            }
+            else {
+                text[2].text = "Animations: Off";
+                animations = false;
+            }
+
+            drawMenu();
+            drawMenuText();
+        }
+        else if (text[3].hover) System.exit(0);
     }
 
     private void drawText(String text, int y, Font font, Color color) {
@@ -111,7 +128,7 @@ public class Menu extends BorderPane {
     private void drawMenuText() {
         Color[] color = {Color.GRAY, Color.GREEN};
 
-        for(int i = 0; i < 3; i++) {
+        for(int i = 0; i < 4; i++) {
             drawText(text[i].text, text[i].y_pos, Font.font("Consolas", 26), color[text[i].color]);
         }
     }

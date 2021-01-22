@@ -18,6 +18,7 @@ public class Game extends GameLogic {
     private final int[] pieces_win;
     private int replay_count;
     private boolean state;
+    private boolean animation_on;
     private Computer ai;
 
     private enum GameType {
@@ -31,8 +32,120 @@ public class Game extends GameLogic {
     private GameType black_player;
     private final Vector<Move> moves;
     private TextArea infoText;
-    private Timer checkTimer;
+    private Timer timer;
     private Chess parent;
+    private Animation animation;
+
+    private class Animation {
+        private final float[] x;
+        private final float[] x2;
+        private float y;
+        private float y2;
+        private int pcs_x;
+        private int pcs_y;
+        private int cast_x;
+        private int pcs;
+        private int color;
+        private int castle;
+
+        private final float[] x_add;
+        private float y_add;
+
+        private boolean running;
+        private final int STEP = 20;
+        private int steps;
+        private final Timer timer;
+
+        Animation() {
+            x = new float[2];
+            x2 = new float[2];
+            x_add = new float[2];
+            timer = new Timer();
+
+            this.running = false;
+        }
+
+        public void init(int x, int y, int x2, int y2, int piece, int color, int castling) {
+            this.pcs_x = x2;
+            this.pcs_y = y2;
+            this.x[0] = x * SQ_SIZE + SQ_SIZE;
+            this.x2[0] = x2 * SQ_SIZE + SQ_SIZE;
+            this.y = y * SQ_SIZE + SQ_SIZE;
+            this.y2 = y2 * SQ_SIZE + SQ_SIZE;
+            this.pcs = piece;
+            this.color = color;
+            this.running = false;
+            this.castle = castling;
+
+            if (castling == 1) {
+                this.x[1] = SQ_SIZE;
+                this.x2[1] = 4 * SQ_SIZE;
+                cast_x = 3;
+                board_table[cast_x][pcs_y].piece = NONE;
+                board_table[cast_x][pcs_y].piece_color = NONE;
+            }
+            else if (castling == 2) {
+                this.x[1] = 8 * SQ_SIZE;
+                this.x2[1] = 6 * SQ_SIZE;
+                cast_x = 5;
+                board_table[cast_x][pcs_y].piece = NONE;
+                board_table[cast_x][pcs_y].piece_color = NONE;
+            }
+
+            calculateStep();
+        }
+
+        public void calculateStep() {
+            x_add[0] = (x2[0] - x[0]) / STEP;
+            y_add = (y2 - y) / STEP;
+            steps = STEP;
+
+            if (castle > 0) {
+                x_add[1] = (x2[1] - x[1]) / STEP;
+            }
+        }
+
+        public boolean isRunning() {
+            return running;
+        }
+
+        public void runAnimation() {
+            running = true;
+
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+
+                    if (--steps > 0) {
+                        drawBoard(board_table);
+
+                        x[0] += x_add[0];
+                        y += y_add;
+
+                        piece[pcs].draw(gc, (int)x[0], (int)y, SQ_SIZE, SQ_SIZE, color);
+                        if (castle > 0) {
+                            x[1] += x_add[1];
+                            piece[ROOK].draw(gc, (int)x[1], (int)y, SQ_SIZE, SQ_SIZE, color);
+                        }
+
+                        runAnimation();
+                    }
+                    else {
+                        running = false;
+                        board_table[pcs_x][pcs_y].piece = pcs;
+                        board_table[pcs_x][pcs_y].piece_color = color;
+
+                        if (castle > 0) {
+                            board_table[cast_x][pcs_y].piece = ROOK;
+                            board_table[cast_x][pcs_y].piece_color = color;
+                        }
+
+                        updateBoard();
+                    }
+                }
+            }, 20);
+        }
+    }
 
     public Game(Chess parent) {
 
@@ -40,6 +153,7 @@ public class Game extends GameLogic {
         this.pieces_win = new int[2];
         this.moves = new Vector<>(64);
         this.ai = new Computer(getLogic());
+        this.animation = new Animation();
 
         infoText = new TextArea();
         infoText.setFont(Font.font("Consolas", SQ_SIZE / 4));
@@ -49,15 +163,15 @@ public class Game extends GameLogic {
         infoText.setWrapText(true);
 
         canvas.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
-            if (rules.checkmate || game_state == GameType.REPLAY) return;
+            if (rules.checkmate || game_state == GameType.REPLAY || animation.isRunning()) return;
             mouseClick((int)(event.getSceneX() - canvas.getLayoutX()),
                            (int)(event.getSceneY() - canvas.getLayoutY()));
         });
 
-        checkTimer = new Timer();
+        timer = new Timer();
     }
 
-    public void initGame(int player) {
+    public void initGame(int player, boolean animation_on) {
 
         this.x = 0;
         this.y = 0;
@@ -66,6 +180,7 @@ public class Game extends GameLogic {
         this.pieces_win[BLACK] = 0;
 
         this.game_state = GameType.PLAY;
+        this.animation_on = animation_on;
         this.replay_count = 0;
         this.infoText.clear();
 
@@ -100,14 +215,14 @@ public class Game extends GameLogic {
                 my = (my - SQ_SIZE) / SQ_SIZE;
 
                 setXY(mx, my);
-                if (rules.choose_piece) drawChooseBox(rules.cur_player);
+                //if (rules.choose_piece) drawChooseBox(rules.cur_player);
             }
         }
         else choosePiece(mx, my);
     }
 
     public void startReplay() {
-        initGame(0);
+        initGame(0, false);
         game_state = GameType.REPLAY;
     }
 
@@ -175,9 +290,8 @@ public class Game extends GameLogic {
         rules.choose_piece = false;
         lookPlayerCheck(board_table, rules, x, y);
         clearBoard(board_table);
-        drawBoard(board_table);
 
-        rules.cur_player ^= 1;
+        updateBoard();
 
         if (rules.cur_player == BLACK && !rules.checkmate && black_player == GameType.COMPUTER) {
             drawText("Computer Turn");
@@ -186,7 +300,7 @@ public class Game extends GameLogic {
     }
 
     private void setTimer() {
-        checkTimer.schedule(new TimerTask() {
+        timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 drawBoard(board_table);
@@ -195,7 +309,7 @@ public class Game extends GameLogic {
     }
 
     private void setComputerTimer() {
-        checkTimer.schedule(new TimerTask() {
+        timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 Move ai_move = ai.makeMove();
@@ -235,17 +349,10 @@ public class Game extends GameLogic {
         }
 
         if (state) {
-
             makeMove(this.x, this.y, x, y);
+
             this.x = x;
             this.y = y;
-
-            if (rules.cur_player == BLACK && !rules.checkmate && !rules.choose_piece && black_player == GameType.COMPUTER) {
-                drawBoard(board_table);
-                drawText("Computer Turn");
-
-                setComputerTimer();
-            }
         }
         else if (board_table[x][y].piece_color == rules.cur_player) {
 
@@ -259,7 +366,36 @@ public class Game extends GameLogic {
         }
     }
 
+    private void updateBoard() {
+
+        drawBoard(board_table);
+
+        if (rules.check) {
+            if (!rules.checkmate) {
+                drawText("Check");
+                setTimer();
+            }
+            else {
+                drawText("Checkmate");
+                parent.gameEnded("Replay Game");
+            }
+        }
+        if (!rules.choose_piece && !rules.checkmate) {
+
+            rules.cur_player ^= 1;
+            if (rules.cur_player == BLACK && black_player == GameType.COMPUTER) {
+                drawText("Computer Turn");
+
+                setComputerTimer();
+            }
+
+        }
+        else if (rules.choose_piece) drawChooseBox(rules.cur_player);
+    }
+
     private void makeMove(int x, int y, int x2, int y2) {
+
+        int old_piece = board_table[x2][y2].piece;
 
         removePiece(x2, y2);
         addMove(x, y, x2, y2);
@@ -288,22 +424,24 @@ public class Game extends GameLogic {
         if (castling > 0) moves.get(replay_count - 1).piece = castling + 1;
 
         clearBoard(board_table);
-        drawBoard(board_table);
 
-        this.state = false;
+        if (animation_on) {
+            animation.init(x, y, x2, y2, board_table[x2][y2].piece, rules.cur_player, castling);
 
-        if (!rules.choose_piece && !rules.checkmate) rules.cur_player ^= 1;
-
-        if (rules.check) {
-            if (!rules.checkmate) {
-                drawText("Check");
-                setTimer();
+            if (old_piece > NONE) {
+                board_table[x2][y2].piece = old_piece;
+                board_table[x2][y2].piece_color = rules.cur_player ^ 1;
             }
             else {
-                drawText("Checkmate");
-                parent.gameEnded("Replay Game");
+                board_table[x2][y2].piece = NONE;
+                board_table[x2][y2].piece_color = NONE;
             }
+
+            animation.runAnimation();
         }
+        else updateBoard();
+
+        this.state = false;
     }
 
     private void removePiece(int x, int y) {
@@ -327,5 +465,9 @@ public class Game extends GameLogic {
             piece[pcs].draw(gc, SQ_SIZE * 9 - pieces_win[BLACK] * (SQ_SIZE / 4) - (SQ_SIZE / 8),
                     SQ_SIZE * 9 + SQ_SIZE / 3, SQ_SIZE / 2, SQ_SIZE / 2, WHITE);
         }
+    }
+
+    private void doAnimation(int x, int y, int x2, int y2) {
+
     }
 }
