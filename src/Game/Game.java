@@ -43,7 +43,7 @@ public class Game extends GameLogic {
 
         infoText = new TextArea();
         infoText.setFont(Font.font("Consolas", SQ_SIZE / 4));
-        infoText.setMaxSize(SQ_SIZE * 3, SQ_SIZE * 8);
+        infoText.setMaxSize(SQ_SIZE * 3 - (SQ_SIZE / 4), SQ_SIZE * 8);
         infoText.setMinHeight(SQ_SIZE * 8);
         infoText.setEditable(false);
         infoText.setWrapText(true);
@@ -218,7 +218,7 @@ public class Game extends GameLogic {
         infoText.appendText(text);
 
         if (game_state == GameType.PLAY){
-            Move mov = new Move(x, y, x2, y2, board_table[this.x][this.y].piece);
+            Move mov = new Move(x, y, x2, y2, board_table[x][y].piece);
             moves.add(mov);
         }
 
@@ -279,6 +279,7 @@ public class Game extends GameLogic {
         if (rules.choose_piece && rules.cur_player == BLACK && black_player == GameType.COMPUTER)
         {
             board_table[x2][y2].piece = QUEEN;
+            moves.get(replay_count - 1).piece = QUEEN;
             rules.choose_piece = false;
         }
 

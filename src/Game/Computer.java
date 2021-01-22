@@ -198,10 +198,10 @@ public class Computer {
 
                 if (i % 2 == result.get(item).move.piece) {
                     count = 0;
-                    while(result.get(count++).deep_node[i] != node);
+                    while(result.get(count).deep_node[i] != node) ++count;
                 } else {
                     count = result.size() - 1;
-                    while(result.get(count--).deep_node[i] != node);
+                    while(result.get(count).deep_node[i] != node) --count;
                 }
 
                 System.out.printf("Choosen node: %d value:%d%n", count, result.get(count).value);
