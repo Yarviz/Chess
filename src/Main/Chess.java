@@ -1,3 +1,14 @@
+/*
+        Chess game made by Jussi Laitala in 2021 version 1.0
+
+    This game can be played against computer or human opponent. Chess moves are saved
+    and can be replayed after the game. Computer engine code is still uncompleted and
+    only caluclates moves three plys ahead without any checkmate strategy.
+
+    This program is free to use, copy or modify.
+
+ */
+
 package Main;
 
 import Game.Menu;
