@@ -156,11 +156,11 @@ public class Computer {
                     }
 
                     //boolean cont = countPositionValue(temp_board, temp_rules, new_move, deep);
-                    temp_rules.cur_player ^= 1;
                     ++deep_node[deep];
                     ++move_counter;
 
                     if (deep > 0 && !temp_rules.checkmate /*&& cont*/) {
+                        temp_rules.cur_player ^= 1;
                         calculateMove(temp_board, temp_rules, deep);
                     }
                     countPositionValue(temp_board, temp_rules, new_move, deep);
@@ -200,10 +200,12 @@ public class Computer {
             Collections.sort(result, Comparator.comparingInt((Calculated c) -> c.value).reversed());
         }
 
-        /*for (Calculated c: result) {
+        for (Calculated c: result) {
             System.out.printf("value: %d nodes: %d %d %d ", c.value, c.deep_node[0], c.deep_node[1], c.deep_node[2]);
             System.out.printf("%c%d->%c%d%n", ('A' + c.move.x), c.move.y + 1, ('A' + c.move.x2), c.move.y2 + 1);
-        }*/
+        }
+
+        System.out.println("");
 
         best_value = result.get(0).value;
         for(item = 0; item < result.size(); item++) {
@@ -253,15 +255,12 @@ public class Computer {
                 else value -= 10;
         }
 
-        if (deep == 0) {
-
-            int[] d_nodes = new int[initial_deep];
-            for (int i = 0; i < initial_deep; i++) {
-                d_nodes[i] = deep_node[i];
-            }
-
-            calculated.add(new Calculated(d_nodes, value, new Move(move[0].x, move[0].y, move[0].x2, move[0].y2, rules.cur_player)));
+        int[] d_nodes = new int[initial_deep];
+        for (int i = 0; i < initial_deep; i++) {
+            d_nodes[i] = deep_node[i];
         }
+
+        calculated.add(new Calculated(d_nodes, value, new Move(move[0].x, move[0].y, move[0].x2, move[0].y2, rules.cur_player)));
 
         return cont;
     }
