@@ -59,8 +59,8 @@ public class Computer {
     public Move makeMove() {
 
         move_counter = 0;
-        initial_deep = 3;
-        //countPieces(logic.board_table);
+        //initial_deep = 3;
+        countPieces(logic.board_table);
 
         for (int i = 0; i < initial_deep; i++) {
             deep_node[i] = 0;
@@ -82,7 +82,7 @@ public class Computer {
             }
         }
 
-        if (pieces < 6) initial_deep = 5;
+        if (pieces < 8) initial_deep = 5;
             else initial_deep = 3;
     }
 
@@ -233,8 +233,8 @@ public class Computer {
         value += piece1 - piece2;
 
         if (rules.checkmate) {
-            if (rules.cur_player == logic.rules.cur_player) value -= 30;
-                else value += 30;
+            if (rules.cur_player == logic.rules.cur_player) value += 30;
+                else value -= 30;
         }
         else if (rules.check) {
             piece1 = NONE;
@@ -249,8 +249,8 @@ public class Computer {
                 if (rules.cur_player == logic.rules.cur_player) value -= piece_value[piece1];
                     else value += piece_value[piece1];
             }
-            else if (rules.cur_player == logic.rules.cur_player) value -= 10;
-                else value += 10;
+            else if (rules.cur_player == logic.rules.cur_player) value += 10;
+                else value -= 10;
         }
 
         if (deep == 0) {
