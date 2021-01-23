@@ -213,7 +213,7 @@ public class GameLogic extends Board {
         table[x3][y].square_check = 4 + type;
     }
 
-    protected void lookPlayerCheck(BoardTable[][] table, LogicRules rules, int x, int y) {
+    protected void lookPlayerCheck(BoardTable[][] table, LogicRules rules) {
 
         if (lookCheck(table, rules, rules.cur_player)) {
             //System.out.println("Check");

@@ -59,7 +59,8 @@ public class Computer {
     public Move makeMove() {
 
         move_counter = 0;
-        countPieces(logic.board_table);
+        initial_deep = 3;
+        //countPieces(logic.board_table);
 
         for (int i = 0; i < initial_deep; i++) {
             deep_node[i] = 0;
@@ -145,9 +146,8 @@ public class Computer {
 
                     logic.lookSpecialMoves(temp_board, temp_rules, x, y);
                     logic.lookPawnPassant(temp_board, temp_rules, x, y);
-                    logic.lookPlayerCheck(temp_board, temp_rules, x, y);
+                    logic.lookPlayerCheck(temp_board, temp_rules);
                     logic.movePossibleCastling(temp_board, temp_rules, x, y);
-                    logic.clearBoard(temp_board);
 
                     if (temp_rules.choose_piece)
                     {
@@ -156,13 +156,11 @@ public class Computer {
                     }
 
                     //boolean cont = countPositionValue(temp_board, temp_rules, new_move, deep);
-
                     temp_rules.cur_player ^= 1;
-
                     ++deep_node[deep];
                     ++move_counter;
 
-                    if (deep > 0 /*&& !temp_rules.checkmate && cont*/) {
+                    if (deep > 0 && !temp_rules.checkmate /*&& cont*/) {
                         calculateMove(temp_board, temp_rules, deep);
                     }
                     countPositionValue(temp_board, temp_rules, new_move, deep);
@@ -233,7 +231,27 @@ public class Computer {
         }
 
         value += piece1 - piece2;
-        if (rules.checkmate && rules.cur_player == logic.rules.cur_player) value += 30;
+
+        if (rules.checkmate) {
+            if (rules.cur_player == logic.rules.cur_player) value -= 30;
+                else value += 30;
+        }
+        else if (rules.check) {
+            piece1 = NONE;
+            for (Move m: rules.escape_moves) {
+                if (table[m.x2][m.y2].piece > NONE) {
+                    piece1 = table[m.x2][m.y2].piece;
+                    break;
+                }
+            }
+
+            if (piece1 > NONE) {
+                if (rules.cur_player == logic.rules.cur_player) value -= piece_value[piece1];
+                    else value += piece_value[piece1];
+            }
+            else if (rules.cur_player == logic.rules.cur_player) value -= 10;
+                else value += 10;
+        }
 
         if (deep == 0) {
 

@@ -18,6 +18,7 @@ public class Game extends GameLogic {
     private int x, y;
     private final int[] pieces_win;
     private int replay_count;
+    private int game_end_state;
     private boolean state;
     private boolean animation_on;
     private Computer ai;
@@ -170,7 +171,7 @@ public class Game extends GameLogic {
 
         infoText = new TextArea();
         infoText.setFont(Font.font("Consolas", SQ_SIZE / 4));
-        infoText.setMaxSize(SQ_SIZE * 3 - (SQ_SIZE / 4), SQ_SIZE * 8);
+        infoText.setMaxSize(SQ_SIZE * 3, SQ_SIZE * 8);
         infoText.setMinHeight(SQ_SIZE * 8);
         infoText.setEditable(false);
         infoText.setWrapText(true);
@@ -200,7 +201,10 @@ public class Game extends GameLogic {
         if (player == 0) black_player = GameType.HUMAN;
             else black_player = GameType.COMPUTER;
 
-        if (game_state == GameType.PLAY) this.moves.clear();
+        if (game_state == GameType.PLAY) {
+            this.moves.clear();
+            this.game_end_state = 0;
+        }
 
         initLogic();
         initBoard();
@@ -291,6 +295,10 @@ public class Game extends GameLogic {
 
         if (replay_count == moves.size()) {
             game_state = GameType.PLAY;
+
+            if (game_end_state == 0) drawText("Draw");
+                else drawText("Checkmate");
+
             parent.gameEnded("Replay Again");
         }
     }
@@ -303,7 +311,7 @@ public class Game extends GameLogic {
         board_table[x][y].piece = KNIGHT + mx;
         moves.get(replay_count - 1).piece = KNIGHT + mx;
         rules.choose_piece = false;
-        lookPlayerCheck(board_table, rules, x, y);
+        lookPlayerCheck(board_table, rules);
         clearBoard(board_table);
 
         updateBoard();
@@ -392,6 +400,7 @@ public class Game extends GameLogic {
             }
             else {
                 drawText("Checkmate");
+                game_end_state = 1;
                 parent.gameEnded("Replay Game");
             }
         }
@@ -433,7 +442,7 @@ public class Game extends GameLogic {
             rules.choose_piece = false;
         }
 
-        lookPlayerCheck(board_table, rules, x2, y2);
+        lookPlayerCheck(board_table, rules);
 
         int castling = movePossibleCastling(board_table, rules, x2, y2);
         if (castling > 0) moves.get(replay_count - 1).piece = KING + castling;
