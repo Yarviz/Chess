@@ -391,7 +391,15 @@ public class Game extends GameLogic {
 
     private void updateBoard() {
 
+        boolean draw = lookPlayerDraw(board_table, rules);
+
         drawBoard(board_table);
+
+        if (draw) {
+            drawText("Draw");
+            parent.gameEnded("Replay Game");
+            return;
+        }
 
         if (rules.check) {
             if (!rules.checkmate) {
@@ -402,9 +410,10 @@ public class Game extends GameLogic {
                 drawText("Checkmate");
                 game_end_state = 1;
                 parent.gameEnded("Replay Game");
+                return;
             }
         }
-        if (!rules.choose_piece && !rules.checkmate) {
+        if (!rules.choose_piece) {
 
             rules.cur_player ^= 1;
             if (rules.cur_player == BLACK && black_player == GameType.COMPUTER) {
@@ -412,9 +421,8 @@ public class Game extends GameLogic {
 
                 setComputerTimer();
             }
-
         }
-        else if (rules.choose_piece) drawChooseBox(rules.cur_player);
+        else drawChooseBox(rules.cur_player);
     }
 
     private void makeMove(int x, int y, int x2, int y2) {

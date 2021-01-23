@@ -11,8 +11,6 @@ import javafx.stage.Stage;
 
 import Game.Game;
 
-import java.util.concurrent.TimeUnit;
-
 public class Chess extends Application {
 
     private Game game;

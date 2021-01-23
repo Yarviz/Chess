@@ -213,6 +213,34 @@ public class GameLogic extends Board {
         table[x3][y].square_check = 4 + type;
     }
 
+    protected boolean lookPlayerDraw(BoardTable[][] table, LogicRules rules) {
+
+        if (rules.check && !rules.checkmate && rules.escape_moves.isEmpty()) return true;
+            else if (rules.check) return false;
+
+        clearBoard(table);
+
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                if (table[x][y].piece > NONE && table[x][y].piece_color == (rules.cur_player ^ 1)) {
+                    piece[table[x][y].piece].lookMoves(table, x, y);
+                }
+            }
+        }
+
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                if (table[x][y].square_check > 1) {
+                    clearBoard(table);
+                    return false;
+                }
+            }
+        }
+
+        clearBoard(table);
+        return true;
+    }
+
     protected void lookPlayerCheck(BoardTable[][] table, LogicRules rules) {
 
         if (lookCheck(table, rules, rules.cur_player)) {
