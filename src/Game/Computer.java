@@ -200,12 +200,11 @@ public class Computer {
             Collections.sort(result, Comparator.comparingInt((Calculated c) -> c.value).reversed());
         }
 
-        for (Calculated c: result) {
+        /*for (Calculated c: result) {
             System.out.printf("value: %d nodes: %d %d %d ", c.value, c.deep_node[0], c.deep_node[1], c.deep_node[2]);
             System.out.printf("%c%d->%c%d%n", ('A' + c.move.x), c.move.y + 1, ('A' + c.move.x2), c.move.y2 + 1);
         }
-
-        System.out.println("");
+        System.out.println("");*/
 
         best_value = result.get(0).value;
         for(item = 0; item < result.size(); item++) {
