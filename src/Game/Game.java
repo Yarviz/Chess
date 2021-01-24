@@ -31,7 +31,7 @@ public class Game extends GameLogic {
     }
 
     private GameType game_state;
-    private GameType black_player;
+    private GameType[] player;
     private final Vector<Move> moves;
     private TextArea infoText;
     private Timer timer;
@@ -168,6 +168,7 @@ public class Game extends GameLogic {
         this.moves = new Vector<>(64);
         this.ai = new Computer(getLogic());
         this.animation = new Animation();
+        this.player = new GameType[2];
 
         infoText = new TextArea();
         infoText.setFont(Font.font("Consolas", SQ_SIZE / 4));
@@ -185,7 +186,7 @@ public class Game extends GameLogic {
         timer = new Timer();
     }
 
-    public void initGame(int player, boolean animation_on, GameType type) {
+    public void initGame(int computer, boolean animation_on, GameType type) {
 
         this.x = 0;
         this.y = 0;
@@ -197,9 +198,10 @@ public class Game extends GameLogic {
         this.animation_on = animation_on;
         this.replay_count = 0;
         this.infoText.clear();
+        player[WHITE] = GameType.HUMAN;
 
-        if (player == 0) black_player = GameType.HUMAN;
-            else black_player = GameType.COMPUTER;
+        if (computer == 0) player[BLACK] = GameType.HUMAN;
+            else player[BLACK] = GameType.COMPUTER;
 
         if (game_state == GameType.PLAY) {
             this.moves.clear();
@@ -316,7 +318,7 @@ public class Game extends GameLogic {
 
         updateBoard();
 
-        if (rules.cur_player == BLACK && !rules.checkmate && black_player == GameType.COMPUTER) {
+        if (!rules.checkmate && player[rules.cur_player] == GameType.COMPUTER) {
             drawText("Computer Turn");
             setComputerTimer();
         }
@@ -416,7 +418,7 @@ public class Game extends GameLogic {
         if (!rules.choose_piece) {
 
             rules.cur_player ^= 1;
-            if (rules.cur_player == BLACK && black_player == GameType.COMPUTER) {
+            if (player[rules.cur_player] == GameType.COMPUTER) {
                 drawText("Computer Turn");
 
                 setComputerTimer();
@@ -443,7 +445,7 @@ public class Game extends GameLogic {
             moves.get(replay_count - 1).piece = KING + 3 + rules.cur_player;
         }
 
-        if (rules.choose_piece && rules.cur_player == BLACK && black_player == GameType.COMPUTER)
+        if (rules.choose_piece && player[rules.cur_player] == GameType.COMPUTER)
         {
             board_table[x2][y2].piece = QUEEN;
             moves.get(replay_count - 1).piece = QUEEN;

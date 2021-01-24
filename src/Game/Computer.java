@@ -45,7 +45,7 @@ public class Computer {
         piece_value[BISHOP] = 3;
         piece_value[ROOK] = 5;
         piece_value[QUEEN] = 9;
-        piece_value[KING] = 1;
+        piece_value[KING] = 0;
 
         rnd = new Random();
 
@@ -82,7 +82,7 @@ public class Computer {
             }
         }
 
-        if (pieces < 8) initial_ply = 4;
+        if (pieces < 6) initial_ply = 4;
             else initial_ply = 2;
     }
 
@@ -239,11 +239,11 @@ public class Computer {
 
         value += piece1 - piece2;
 
-        if (rules.checkmate) {
+        if (rules.checkmate && deep == 0) {
             if (rules.cur_player == logic.rules.cur_player) value += 30;
                 else value -= 30;
         }
-        else if (rules.check) {
+        /*else if (rules.check) {
             piece1 = NONE;
             for (Move m: rules.escape_moves) {
                 if (table[m.x2][m.y2].piece > NONE) {
@@ -251,14 +251,15 @@ public class Computer {
                     break;
                 }
             }
-
+            /*int value2 = 0;
             if (piece1 > NONE) {
-                if (rules.cur_player == logic.rules.cur_player) value += piece_value[piece1];
-                    else value -= piece_value[piece1];
+                if (rules.cur_player == logic.rules.cur_player) value2 -= piece_value[piece1];
+                    else value2 += piece_value[piece1];
+                if (rules.cur_player == logic.rules.cur_player) System.out.println(value2);
             }
-            else if (rules.cur_player == logic.rules.cur_player) value += 10;
-                else value -= 10;
-        }
+            if (rules.cur_player == logic.rules.cur_player && piece1 == NONE) value += 5;
+                else value -= 15;
+        }*/
 
         int[] ply_nodes = new int[initial_ply + 1];
         for (int i = 0; i < initial_ply + 1; i++) {
