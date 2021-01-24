@@ -3,7 +3,7 @@
 
     This game can be played against computer or human opponent. Chess moves are saved
     and can be replayed after the game. Computer engine code is still uncompleted and
-    only caluclates moves three plys ahead without any checkmate strategy.
+    only caluclates moves three plys ahead without any endgame strategy.
 
     This program is free to use, copy or modify.
 

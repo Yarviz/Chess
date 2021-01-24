@@ -13,22 +13,22 @@ public class Computer {
     private final Random rnd;
 
     private int move_counter;
-    private int initial_deep;
+    private int initial_ply;
 
-    private final int MAX_DEEP = 7;
+    private final int MAX_PLY = 7;
 
     private final Move[] move;
     private final int[] piece_value;
-    private final int[] deep_node;
+    private final int[] ply;
     private final ArrayList<Calculated> calculated;
 
     private class Calculated {
-        public final int[] deep_node;
+        public final int[] ply;
         public int value;
         public Move move;
 
-        Calculated(int[] deep_nodes, int value, Move move) {
-            this.deep_node = deep_nodes;
+        Calculated(int[] plys, int value, Move move) {
+            this.ply = plys;
             this.value = value;
             this.move = move;
         }
@@ -38,7 +38,7 @@ public class Computer {
         this.logic = logic;
 
         piece_value = new int[6];
-        deep_node = new int[MAX_DEEP];
+        ply = new int[MAX_PLY];
 
         piece_value[PAWN] = 1;
         piece_value[KNIGHT] = 3;
@@ -59,15 +59,15 @@ public class Computer {
     public Move makeMove() {
 
         move_counter = 0;
-        //initial_deep = 3;
+        //initial_ply = 3;
         countPieces(logic.board_table);
 
-        for (int i = 0; i < initial_deep; i++) {
-            deep_node[i] = 0;
+        for (int i = 0; i < initial_ply + 1; i++) {
+            ply[i] = 0;
             calculated.clear();
         }
 
-        calculateMove(logic.board_table, logic.rules, initial_deep);
+        calculateMove(logic.board_table, logic.rules, 0);
         move[1] = countBestValue();
 
         return move[1];
@@ -82,8 +82,8 @@ public class Computer {
             }
         }
 
-        if (pieces < 8) initial_deep = 5;
-            else initial_deep = 3;
+        if (pieces < 8) initial_ply = 4;
+            else initial_ply = 2;
     }
 
     private void calculateMove(BoardTable[][] table, LogicRules rules, int deep) {
@@ -106,11 +106,11 @@ public class Computer {
 
                     if (moves) {
 
-                        if (deep == initial_deep) {
+                        if (deep == 0) {
                             move[0].x = x;
                             move[0].y = y;
                         }
-                        testMoves(temp_board, temp_rules, x, y, deep - 1);
+                        testMoves(temp_board, temp_rules, x, y, deep);
                     }
                 }
             }
@@ -137,7 +137,7 @@ public class Computer {
                     temp_board[xx][yy].piece = NONE;
                     temp_board[xx][yy].piece_color = NONE;
 
-                    if (deep == initial_deep - 1) {
+                    if (deep == 0) {
                         move[0].x2 = x;
                         move[0].y2 = y;
                     }
@@ -156,12 +156,12 @@ public class Computer {
                     }
 
                     //boolean cont = countPositionValue(temp_board, temp_rules, new_move, deep);
-                    ++deep_node[deep];
+                    ++ply[deep];
                     ++move_counter;
 
-                    if (deep > 0 && !temp_rules.checkmate /*&& cont*/) {
+                    if (deep < initial_ply && !temp_rules.checkmate/* && cont*/) {
                         temp_rules.cur_player ^= 1;
-                        calculateMove(temp_board, temp_rules, deep);
+                        calculateMove(temp_board, temp_rules, deep + 1);
                     }
                     countPositionValue(temp_board, temp_rules, new_move, deep);
                 }
@@ -171,7 +171,7 @@ public class Computer {
 
     private Move countBestValue()
     {
-        if (calculated.isEmpty()) {
+        if (ply[0] == 0) {
             System.out.println("Computer Draw");
             return new Move(-1, -1, -1, -1,0);
         }
@@ -179,29 +179,35 @@ public class Computer {
         int item = 0;
         int nodes_count;
         int best_value;
-        List<Calculated> result2 = calculated;
-        List<Calculated> result = new ArrayList<>();
+        List<Calculated> result = calculated;
+        List<Calculated> calc_result = new ArrayList<>();
 
-        Collections.sort(result2, Comparator.comparingInt((Calculated c) -> c.deep_node[initial_deep - 1]).thenComparingInt(c -> c.value));
-
-        nodes_count = result2.get(0).deep_node[initial_deep - 1];
-
-        for(int i = 0; i < result2.size(); i++) {
-            if (result2.get(i).deep_node[initial_deep - 1] == nodes_count) {
-                result.add(result2.get(i));
-                if (++nodes_count > deep_node[initial_deep - 1]) break;
+        for (int i = initial_ply; i > 0; i--) {
+            final int node = i - 1;
+            if (i % 2 == 1) {
+                Collections.sort(result, Comparator.comparing((Calculated c) -> c.ply[node]).thenComparing(c -> c.value));
             }
+            else {
+                Collections.sort(result, Comparator.comparing((Calculated c) -> c.ply[node]).thenComparing(c -> c.value, Comparator.reverseOrder()));
+            }
+
+            nodes_count = result.get(0).ply[node];
+            calc_result.clear();
+
+            for(int i2 = 0; i2 < result.size(); i2++) {
+                if (result.get(i2).ply[node] == nodes_count) {
+                    calc_result.add(result.get(i2));
+                    if (++nodes_count > ply[node]) break;
+                }
+            }
+
+            result = new ArrayList<>(calc_result);
         }
 
-        if (initial_deep % 2 == 0) {
-            Collections.sort(result, Comparator.comparingInt((Calculated c) -> c.value));
-        }
-        else {
-            Collections.sort(result, Comparator.comparingInt((Calculated c) -> c.value).reversed());
-        }
+        Collections.sort(result, Comparator.comparing((Calculated c) -> c.value).reversed());
 
         /*for (Calculated c: result) {
-            System.out.printf("value: %d nodes: %d %d %d ", c.value, c.deep_node[0], c.deep_node[1], c.deep_node[2]);
+            System.out.printf("value: %d nodes: %d %d %d ", c.value, c.ply[0], c.ply[1], c.ply[2]);
             System.out.printf("%c%d->%c%d%n", ('A' + c.move.x), c.move.y + 1, ('A' + c.move.x2), c.move.y2 + 1);
         }
         System.out.println("");*/
@@ -247,19 +253,19 @@ public class Computer {
             }
 
             if (piece1 > NONE) {
-                if (rules.cur_player == logic.rules.cur_player) value -= piece_value[piece1];
-                    else value += piece_value[piece1];
+                if (rules.cur_player == logic.rules.cur_player) value += piece_value[piece1];
+                    else value -= piece_value[piece1];
             }
             else if (rules.cur_player == logic.rules.cur_player) value += 10;
                 else value -= 10;
         }
 
-        int[] d_nodes = new int[initial_deep];
-        for (int i = 0; i < initial_deep; i++) {
-            d_nodes[i] = deep_node[i];
+        int[] ply_nodes = new int[initial_ply + 1];
+        for (int i = 0; i < initial_ply + 1; i++) {
+            ply_nodes[i] = ply[i];
         }
 
-        calculated.add(new Calculated(d_nodes, value, new Move(move[0].x, move[0].y, move[0].x2, move[0].y2, rules.cur_player)));
+        calculated.add(new Calculated(ply_nodes, value, new Move(move[0].x, move[0].y, move[0].x2, move[0].y2, rules.cur_player)));
 
         return cont;
     }
