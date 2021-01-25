@@ -351,9 +351,9 @@ public class Game extends GameLogic {
 
     private void addMove(int x, int y, int x2, int y2) {
         String text = Character.toString('A' + x);
-        text += (y + 1) + ":";
-        text += Character.toString('A' + x2);
-        text += (y2 + 1) + " ";
+        text += (y + 1) + Character.toString('A' + x2) + (y2 + 1);
+        if (replay_count % 3 != 2) text += " : ";
+            else text += " ";
 
         infoText.appendText(text);
 
