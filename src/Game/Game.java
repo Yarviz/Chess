@@ -393,12 +393,18 @@ public class Game extends GameLogic {
 
     private void updateBoard() {
 
-        boolean draw = lookPlayerDraw(board_table, rules);
+        int draw = lookPlayerDraw(board_table, rules);
 
         drawBoard(board_table);
 
-        if (draw) {
+        if (draw == 1) {
             drawText("Draw");
+            parent.gameEnded("Replay Game");
+            return;
+        }
+        else if (draw == 2) {
+            if (rules.cur_player == WHITE) drawText("White Wins");
+                else drawText("Black Wins");
             parent.gameEnded("Replay Game");
             return;
         }

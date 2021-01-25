@@ -227,7 +227,11 @@ public class Computer {
     private Move countBestValue()
     {
         if (ply[0] == 0) {
-            System.out.println("Computer Draw");
+            /*if (logic.lookPlayerDraw(logic.board_table, logic.rules) == 2)
+            {
+                System.out.println("White Wins");
+            }
+            else System.out.println("Computer Draw");*/
             return new Move(-1, -1, -1, -1,0);
         }
 
