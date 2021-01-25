@@ -99,8 +99,11 @@ public class Board {
         /*board_table[4][5].piece = KING;
         board_table[4][5].piece_color = WHITE;
 
-        board_table[0][0].piece = QUEEN;
-        board_table[0][0].piece_color = BLACK;
+        board_table[4][1].piece = PAWN;
+        board_table[4][1].piece_color = WHITE;
+
+        board_table[0][1].piece = QUEEN;
+        board_table[0][1].piece_color = BLACK;
 
         board_table[3][4].piece = KNIGHT;
         board_table[3][4].piece_color = BLACK;*/

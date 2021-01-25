@@ -236,7 +236,7 @@ public class Game extends GameLogic {
                 mx = (mx - SQ_SIZE) / SQ_SIZE;
                 my = (my - SQ_SIZE) / SQ_SIZE;
 
-                setXY(mx, my);
+                if (player[rules.cur_player] == GameType.HUMAN) setXY(mx, my);
                 //if (rules.choose_piece) drawChooseBox(rules.cur_player);
             }
         }
@@ -317,11 +317,13 @@ public class Game extends GameLogic {
         clearBoard(board_table);
 
         updateBoard();
+        /*rules.cur_player ^= 1;
 
         if (!rules.checkmate && player[rules.cur_player] == GameType.COMPUTER) {
+
             drawText("Computer Turn");
             setComputerTimer();
-        }
+        }*/
     }
 
     private void setCheckTimer() {
@@ -421,6 +423,7 @@ public class Game extends GameLogic {
                 return;
             }
         }
+
         if (!rules.choose_piece) {
 
             rules.cur_player ^= 1;
