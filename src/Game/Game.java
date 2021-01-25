@@ -49,6 +49,7 @@ public class Game extends GameLogic {
         private int pcs;
         private int color;
         private int castle;
+        private boolean passant;
 
         private final float[] x_add;
         private float y_add;
@@ -67,7 +68,7 @@ public class Game extends GameLogic {
             this.running = false;
         }
 
-        public void init(int x, int y, int x2, int y2, int piece, int color, int castling) {
+        public void init(int x, int y, int x2, int y2, int piece, int color, int castling, boolean passant) {
             this.pcs_x = x2;
             this.pcs_y = y2;
             this.x[0] = x * SQ_SIZE + SQ_SIZE;
@@ -78,6 +79,7 @@ public class Game extends GameLogic {
             this.color = color;
             this.running = false;
             this.castle = castling;
+            this.passant = passant;
 
             if (castling == 1) {
                 this.x[1] = SQ_SIZE;
@@ -92,6 +94,14 @@ public class Game extends GameLogic {
                 cast_x = 5;
                 board_table[cast_x][pcs_y].piece = NONE;
                 board_table[cast_x][pcs_y].piece_color = NONE;
+            }
+
+            if (passant) {
+                int y_add = 1;
+                if (color == BLACK) y_add = - 1;
+
+                board_table[pcs_x][pcs_y + y_add].piece = PAWN;
+                board_table[pcs_x][pcs_y + y_add].piece_color = color ^ 1;
             }
 
             calculateStep();
@@ -146,6 +156,15 @@ public class Game extends GameLogic {
 
                 if (board_table[pcs_x][pcs_y].piece > NONE) {
                     addPiece(board_table[pcs_x][pcs_y].piece, board_table[pcs_x][pcs_y].piece_color);
+                }
+                else if (passant) {
+                    int y_add = 1;
+                    if (color == BLACK) y_add = - 1;
+
+                    board_table[pcs_x][pcs_y + y_add].piece = NONE;
+                    board_table[pcs_x][pcs_y + y_add].piece_color = NONE;
+                    addPiece(PAWN, color ^ 1);
+                    moves.get(replay_count - 1).piece = KING + 3 + color;
                 }
 
                 board_table[pcs_x][pcs_y].piece = pcs;
@@ -457,7 +476,9 @@ public class Game extends GameLogic {
         board_table[x][y].piece_color = NONE;
 
         lookSpecialMoves(board_table, rules, x2, y2);
-        if (lookPawnPassant(board_table, rules, x2, y2)) {
+        boolean passant = lookPawnPassant(board_table, rules, x2, y2);
+
+        if (passant && !animation_on) {
             addPiece(PAWN, rules.cur_player ^ 1);
             moves.get(replay_count - 1).piece = KING + 3 + rules.cur_player;
         }
@@ -477,7 +498,7 @@ public class Game extends GameLogic {
         clearBoard(board_table);
 
         if (animation_on) {
-            animation.init(x, y, x2, y2, board_table[x2][y2].piece, rules.cur_player, castling);
+            animation.init(x, y, x2, y2, board_table[x2][y2].piece, rules.cur_player, castling, passant);
 
             if (old_piece > NONE) {
                 board_table[x2][y2].piece = old_piece;
