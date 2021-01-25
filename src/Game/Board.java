@@ -41,6 +41,13 @@ public class Board {
             this.piece_color = NONE;
             this.piece = NONE;
         }
+
+        public void copyBoard(BoardTable board) {
+            this.square_pawn = board.square_pawn;
+            this.square_check = board.square_check;
+            this.piece_color = board.piece_color;
+            this.piece = board.piece;
+        }
     }
 
     Board() {
@@ -88,6 +95,15 @@ public class Board {
                 ++y;
             }
         }
+
+        /*board_table[4][5].piece = KING;
+        board_table[4][5].piece_color = WHITE;
+
+        board_table[0][0].piece = QUEEN;
+        board_table[0][0].piece_color = BLACK;
+
+        board_table[3][4].piece = KNIGHT;
+        board_table[3][4].piece_color = BLACK;*/
 
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
     }
@@ -138,12 +154,7 @@ public class Board {
         for (int y = 0; y < 8; y++)
         {
             for (int x = 0; x < 8; x++) {
-
-                //dest[x][y].square_checkmate = src[x][y].square_checkmate;
-                dest[x][y].square_pawn = src[x][y].square_pawn;
-                dest[x][y].square_check = src[x][y].square_check;
-                dest[x][y].piece = src[x][y].piece;
-                dest[x][y].piece_color = src[x][y].piece_color;
+                dest[x][y].copyBoard(src[x][y]);
             }
         }
     }

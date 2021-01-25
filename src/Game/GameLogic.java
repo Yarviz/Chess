@@ -51,7 +51,11 @@ public class GameLogic extends Board {
             this.rook_right_move[BLACK] = src.rook_right_move[BLACK];
             this.check = src.check;
             this.checkmate = src.checkmate;
-            this.escape_moves = new Vector<>(src.escape_moves);
+            this.escape_moves.clear();
+
+            for (Move m: src.escape_moves) {
+                this.escape_moves.add(new Move(m));
+            }
         }
     }
 
@@ -68,6 +72,14 @@ public class GameLogic extends Board {
             this.x2 = x2;
             this.y2 = y2;
             this.piece = piece;
+        }
+
+        Move(Move mov) {
+            this.x = mov.x;
+            this.y = mov.y;
+            this.x2 = mov.x2;
+            this.y2 = mov.y2;
+            this.piece = mov.piece;
         }
     }
 
@@ -303,7 +315,7 @@ public class GameLogic extends Board {
 
                 if (table[xx][yy].square_check > 1) {
 
-                    copyBoard(board_table, temp_board);
+                    copyBoard(table, temp_board);
                     temp_board[xx][yy].piece = cur_piece;
                     temp_board[xx][yy].piece_color = cur_color;
 
