@@ -172,7 +172,7 @@ public class Game extends GameLogic {
 
         infoText = new TextArea();
         infoText.setFont(Font.font("Consolas", SQ_SIZE / 4));
-        infoText.setMaxSize(SQ_SIZE * 3, SQ_SIZE * 8);
+        infoText.setMaxSize(SQ_SIZE * 3 + (SQ_SIZE / 4), SQ_SIZE * 8);
         infoText.setMinHeight(SQ_SIZE * 8);
         infoText.setEditable(false);
         infoText.setWrapText(true);
@@ -212,6 +212,12 @@ public class Game extends GameLogic {
         initBoard();
         drawBoard(board_table);
         drawPositionText();
+
+        if (player[WHITE] == GameType.COMPUTER && game_state == GameType.PLAY)
+        {
+            drawText("Computer Turn");
+            setComputerTimer();
+        }
     }
 
     public Canvas getCanvas() {
@@ -423,6 +429,8 @@ public class Game extends GameLogic {
                 return;
             }
         }
+
+        if (game_state == GameType.REPLAY) return;
 
         if (!rules.choose_piece) {
 
